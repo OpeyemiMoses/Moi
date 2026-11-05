@@ -1,121 +1,121 @@
 # MOI — Autonomous Treasury Operating System
 
-MOI (Multi-currency Operations & Intelligence) is a non-custodial digital treasury application built on Celo Mainnet. It enables individuals, startups, and businesses across emerging markets to protect their purchasing power against local currency devaluation, automate foreign exchange swaps, issue zero-gas cryptographic payment requests, and withdraw funds directly into their domestic bank accounts.
+MOI is a non-custodial treasury operating system and payment infrastructure built on Celo Mainnet. Designed for businesses, digital merchants, and individuals operating in emerging markets, MOI automates currency risk management, executes institutional FX swaps with guaranteed pricing, enables direct domestic bank withdrawals, and issues zero-gas cryptographic payment requests.
 
 ---
 
-## Note for Judges on How to Test
+## Evaluation Guide for Judges
 
-Welcome judges and evaluators of the **Agents on Open Rails** hackathon. This guide provides exact instructions to evaluate MOI on Celo Mainnet locally or via your Web3 browser client.
+This walkthrough details how to verify MOI's core financial mechanisms and onchain capabilities on Celo Mainnet.
 
-### Quick Start (Under 2 Minutes)
+### Local Setup
 
-1. **Clone the Repository**:
+1. **Clone and Install**:
    ```bash
    git clone https://github.com/OpeyemiMoses/Moi.git
    cd Moi
-   ```
-
-2. **Install Dependencies**:
-   ```bash
    npm install
    ```
 
-3. **Configure Environment Variables**:
+2. **Environment Configuration**:
    ```bash
    cp .env.example .env
    ```
-   *Note: The default `.env.example` is preconfigured for Celo Mainnet (`chainId: 42220`) using the official public RPC (`https://forno.celo.org`) and public explorer (`https://celoscan.io`). No paid API keys are required to run or test the application.*
+   *The default configuration connects directly to Celo Mainnet (`chainId: 42220`) via the public RPC (`https://forno.celo.org`). No proprietary API keys are required for evaluation.*
 
-4. **Start the Development Server**:
+3. **Launch Application**:
    ```bash
    npm run dev
    ```
-   Open your browser to: `http://localhost:3000`
+   Access the dashboard at `http://localhost:3000`.
 
 ---
 
-### Step-by-Step Evaluation Walkthrough
+### Key Feature Evaluation Flow
 
-#### 1. Truthful Disconnected State
-* Open `http://localhost:3000`.
-* Notice that when disconnected, MOI displays **zero synthetic data**: all asset balances show `0.00`, execution tables are empty, and the receive drawer displays a prompt to connect.
-* Verified Celo Mainnet contracts (`LimitOrderReactor`, `Permit2`, `ERC-8004 Registry`) and the active attribution tag (`celo_c9cb9a59fc4c`) are displayed transparently.
-
-#### 2. Connect Your Celo Mainnet Wallet
+#### 1. Authentication & Onchain Sync
 * Click **Connect Wallet** in the top navigation bar.
-* Connect any Celo-compatible wallet (MetaMask, Rabby, Valora, or MiniPay) switched to **Celo Mainnet (Chain ID 42220)**.
-* Sign the Sign-In with Ethereum (SIWE, EIP-4361) challenge to authenticate your multi-tenant session.
-* Your live onchain balances for CELO, USD₮, cUSD, cNGN, wBRL, and wARS are immediately fetched directly from Celo Mainnet via RPC.
+* Connect any Celo-compatible wallet (MetaMask, Rabby, Valora, or MiniPay) on **Celo Mainnet (Chain ID 42220)**.
+* Sign the Sign-In with Ethereum (SIWE, EIP-4361) challenge to initialize your multi-tenant session.
+* Verified balances for CELO, USD₮, cUSD, cNGN, wBRL, and wARS synchronize in real time directly from Celo Mainnet RPC.
 
-#### 3. Test the Smart Portfolio Guard & Drift Rebalancer (NairaGuard Feature)
-* On the **Dashboard**, locate the **Target Portfolio Allocation & Rebalance Guard** card.
-* Adjust the target ratio slider (e.g., set to `70% USD₮ / 30% Local Currency`).
-* MOI dynamically monitors balance deviation. If your portfolio drifts beyond tolerance, a **1-Click Rebalance** card surfaces with exact required rebalancing quantities and pre-populates the swap terminal.
+#### 2. Portfolio Allocation & Rebalance Guard
+* On the **Dashboard**, view the **Target Portfolio Allocation & Rebalance Guard**.
+* Set a target ratio using the allocation slider (e.g., `70% USD₮ / 30% Local Currency`).
+* MOI dynamically monitors balance deviation against live market rates. When portfolio drift occurs, the system generates an automated rebalancing recommendation that populates the swap terminal with a single click.
 
-#### 4. Test the Instant Currency Swap Terminal (Textile FX v2 & Ayo Rate Advantage)
-* Navigate to the **Treasury & FX** tab in the sidebar.
-* Select a trading pair (e.g., `cNGN → USD₮`, `wARS → USD₮`, or `wBRL → USD₮`).
-* Observe the live RFQ market preview and the **+0.4% Better than Centralized P2P** badge.
-* The smart action button enforces wallet balance checks: if your balance is zero, it indicates `Insufficient Balance`; if sufficient, it evaluates all safety checks under the hood and allows seamless execution.
+#### 3. Instant Currency Swaps (Textile FX v2)
+* Navigate to the **Treasury & FX** tab.
+* Select a trading pair (`cNGN → USD₮`, `wARS → USD₮`, or `wBRL → USD₮`).
+* Observe institutional RFQ pricing, zero slippage guarantees, and the integrated P2P rate advantage indicator.
+* The execution button dynamically verifies balance requirements and runs the 17-point risk policy checks before signing onchain.
 
-#### 5. Test Multi-Country Bank Off-Ramps (Withdraw to Bank Modal)
-* In the dashboard quick-action bar, click **Withdraw to Bank**.
-* Select any supported regional corridor:
-  * **Nigeria (NG)**: Instant settlement via NIBSS Instant Payment (NIP) to banks including GTBank, Zenith, Access, Kuda, and PalmPay.
-  * **Brazil (BR)**: Instant settlement via Central Bank PIX key.
-  * **Argentina (AR)**: Settlement via COELSA CBU / CVU or Alias.
-  * **Colombia (CO)** / **Mexico (MX)**: Settlement via PSE / Nequi or SPEI CLABE.
-  * **Global**: Settle USD₮ via international wire.
-* Enter an amount (or click `MAX`), provide account details, and click **Confirm & Withdraw to Bank**.
-* An immutable dispatch receipt is generated with a verified settlement reference code (e.g., `REF-NIP-...`) and recorded into your double-entry ledger.
+#### 4. Multi-Corridor Domestic Bank Withdrawals
+* From the dashboard quick-action bar, select **Withdraw to Bank**.
+* Select a domestic settlement corridor:
+  * **Nigeria**: Instant settlement via NIBSS Instant Payment (NIP) to major commercial banks and fintechs (GTBank, Zenith, Access, Kuda, PalmPay, OPay).
+  * **Brazil**: Instant settlement via Central Bank PIX.
+  * **Argentina**: Bank clearing via COELSA CBU / CVU or Alias.
+  * **Colombia & Mexico**: Local settlement via PSE / Nequi or SPEI CLABE.
+  * **Global**: International USD₮ clearing.
+* Enter an amount, specify destination account details, and click **Confirm & Withdraw to Bank**.
+* The transaction generates an immutable settlement reference code (e.g., `REF-NIP-...`) and commits the entry to the activity ledger.
 
-#### 6. Test Zero-Gas Invoicing & Payment Requests (Dedicated Invoices Page)
-* Click **Invoices & Pay** in the sidebar.
-* Click **Create New Invoice**.
-* Enter a client name, invoice reference, amount, and token (e.g., `USD₮` or `cNGN`).
+#### 5. Zero-Gas Invoicing & Payment Requests
+* Navigate to the **Invoices & Pay** tab in the sidebar.
+* Click **Create New Invoice**, specify client details, invoice reference, payment amount, and currency.
 * Click **Sign & Issue Invoice with Wallet ($0 Gas)**.
-* Your Web3 browser wallet prompts you to sign an **EIP-712 structured data message**.
-* Notice the transaction fee is **$0.00 and zero gas**.
-* Once signed, the invoice is saved to your cryptographic registry with a verified EIP-712 proof badge.
-* Click **View QR** to inspect the invoice slip, complete with a scannable payment QR code and shareable `celo:` URI link.
+* Your wallet prompts you to sign an **EIP-712 structured data message**. This costs **$0.00 and consumes zero network gas**.
+* The invoice is immediately registered in your cryptographic history with verified EIP-712 proof.
+* Click **View QR** to inspect the invoice slip, dynamic payment QR code, and standard `celo:` payment URI.
+
+#### 6. Autonomous Treasury Agent Configuration
+* Navigate to the **Agents** tab.
+* Inspect active autonomous mandates or click **Create Mandate & Issue Agent**.
+* Define operational parameters: trade execution caps, minimum local currency reserve limits, and maximum allowed slippage.
+* Deployed agents execute deterministic rebalancing within these constraints under dual-key isolation.
 
 ---
 
-## Core Capabilities
+## Core Architecture
 
-### 1. Smart Portfolio Guard & Inflation Protection
-Emerging market currencies experience rapid depreciation. MOI allows users to define target allocation thresholds (e.g., 70% USD₮ / 30% Local Currency). The policy engine tracks portfolio drift in real-time and provides one-click automated rebalancing recommendations to preserve capital value.
-
-### 2. Instant Currency Swaps Without P2P Escrow Risk
-Traditional peer-to-peer (P2P) crypto exchanges expose users to bank account freezes, counterparty delays, and escrow fraud. MOI integrates Textile FX v2 on Celo Mainnet, providing guaranteed RFQ pricing, zero slippage, and atomic onchain settlement.
-
-### 3. Direct Multi-Corridor Bank Off-Ramping
-Users are never locked onchain. MOI integrates real-world payment networks to allow direct cash-out into domestic accounts:
-* **Nigeria**: NIBSS Instant Payments (NIP) to commercial banks and fintechs (GTBank, Zenith, Kuda, PalmPay, OPay).
-* **Brazil**: Central Bank PIX instant settlement.
-* **Argentina**: COELSA CBU / CVU and Alias bank clearing.
-* **Colombia & Mexico**: PSE, Nequi, and SPEI bank rails.
-* **Global**: International USD₮ clearing.
-
-### 4. Zero-Gas Cryptographic Invoicing (EIP-712)
-Issuing invoices should not cost gas fees. MOI enables businesses and freelancers to generate formal client invoices cryptographically signed by their wallet using EIP-712 typed structured data. Clients scan a dynamic QR code using Valora, MiniPay, or MetaMask to settle directly into the merchant treasury.
+```
+[ Master Owner Custody ] (MetaMask / Rabby / MiniPay / Valora)
+         │
+         │  1. Non-custodial asset custody (Permit2 approvals)
+         │  2. Policy rule parameter configuration
+         ▼
+[ Deterministic Policy Engine ] (Zero-Trust TypeScript Execution)
+         │
+         │  Enforces 17 Financial Invariants:
+         │  - Daily trading caps
+         │  - Minimum local currency reserve preservation
+         │  - Maximum allowed slippage bounds
+         │  - HMAC attestation verification
+         ▼
+[ Restricted Agent Signer ] (Backend Operational Signer)
+         │
+         │  Dispatches authorized transactions strictly within policy.
+         │  Zero access to owner custody; cannot redirect payout targets.
+         ▼
+[ Celo Mainnet Settlement ] (Textile LimitOrderReactor · Chain ID 42220)
+```
 
 ---
 
-## Celo Mainnet Integrations & Contract Addresses
+## Celo Mainnet Integrations & Verified Contracts
 
-All transactions and contracts interact strictly with verified protocols on **Celo Mainnet (Chain ID 42220)**:
+All operations settle through audited, verified protocols on **Celo Mainnet (Chain ID 42220)**:
 
-| Protocol / Contract | Address | Purpose |
-| ------------------- | ------- | ------- |
-| **Uniswap Permit2** | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | Non-custodial signature approvals |
+| Protocol / Component | Contract Address | Function |
+| -------------------- | ---------------- | -------- |
+| **Uniswap Permit2** | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | Non-custodial allowance signing |
 | **Textile LimitOrderReactor** | `0xa9AA0a64769cBed4d3B1Ceb4Df01CdE915C235b3` | Institutional FX RFQ settlement |
-| **ERC-8004 Registry** | `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` | Autonomous agent identity and registration |
-| **ERC-8004 Reputation** | `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` | Trust scoring and feedback registry |
-| **Attribution Tag (ERC-8021)** | `celo_c9cb9a59fc4c` | Builder attribution appended to calldata |
+| **ERC-8004 Agent Registry** | `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` | Autonomous agent identity registration |
+| **ERC-8004 Reputation Registry** | `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` | Trust scoring and performance feedback |
+| **Calldata Attribution (ERC-8021)** | `celo_c9cb9a59fc4c` | Builder attribution appended to transaction data |
 
-### Verified Stablecoin & Local Currency Assets
+### Supported Assets
 
 * **USD₮ (Tether USD)**: `0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e`
 * **cNGN (Nigerian Naira)**: `0xBEB774A749B89A762961e6Bf9e6Ac05928a385f0`
@@ -128,53 +128,21 @@ All transactions and contracts interact strictly with verified protocols on **Ce
 
 ---
 
-## Security Architecture & Dual-Key Boundaries
-
-MOI adheres to a strict dual-key security model:
-
-```
-[ Master Owner Custody ] (MetaMask / Rabby / MiniPay)
-         │
-         │  1. Grants explicit token allowance (Permit2)
-         │  2. Configures deterministic trade parameters
-         ▼
-[ Policy Engine Boundary ] (Zero-Trust TypeScript Execution)
-         │
-         │  17 Immutable Policy Constraints:
-         │  - Daily volume caps
-         │  - Minimum local operating reserves
-         │  - Maximum allowed slippage
-         │  - Atomic HMAC attestation verification
-         ▼
-[ Restricted Agent Signer ] (Backend Signer)
-         │
-         │  Executes signed settlement orders strictly within bounds.
-         │  Zero ability to drain funds or redirect recipient addresses.
-         ▼
-[ Celo Mainnet Settlement ] (Textile LimitOrderReactor)
-```
-
-1. **Non-Custodial Owner Custody**: The master owner wallet retains full sovereignty. No smart contract or agent can move funds without verified signature approvals.
-2. **Deterministic Rules Over AI Prompts**: Natural language models (LLMs) are used solely for drafting mandates or explaining state. Trade authorization is performed exclusively by deterministic code.
-3. **Multi-Tenant Data Isolation**: User portfolios, mandates, and invoices are strictly isolated by session ID and owner wallet.
-
----
-
 ## Repository Structure
 
 ```
 moi/
 ├── apps/
-│   └── web/                   # Next.js 15 front-end application and API routes
+│   └── web/                   # Next.js 15 web interface, API routes, and UI components
 ├── packages/
 │   ├── agent-core/            # Autonomous agent loop and lifecycle orchestrator
-│   ├── buy-client/            # buy and x402 service marketplace client
-│   ├── database/              # Multi-tenant data store and ledger interface
-│   ├── identity/              # SIWE (EIP-4361) authentication and session manager
-│   ├── ledger/                # Double-entry bookkeeping and portfolio analytics
+│   ├── buy-client/            # buy and x402 service marketplace integration
+│   ├── database/              # Multi-tenant data store and double-entry ledger interface
+│   ├── identity/              # SIWE (EIP-4361) authentication and session validation
+│   ├── ledger/                # Accounting engine and portfolio analytics
 │   ├── policy-engine/         # 17-point deterministic financial risk engine
 │   ├── shared-types/          # Canonical schemas, constants, and token metadata
-│   ├── textile-adapter/       # Textile FX v2 RFQ client and Stitch feed
+│   ├── textile-adapter/       # Textile FX v2 RFQ client and Stitch liquidity feed
 │   └── wallet-signer/         # Dual-key service and ERC-8021 calldata attribution
 ├── docs/                      # Architectural specifications and evaluation documents
 ├── prisma/                    # Relational database schema
@@ -183,23 +151,26 @@ moi/
 ├── LICENSE                    # MIT Open Source License
 ├── CONTRIBUTING.md            # Guidelines for open source contributors
 ├── CODE_OF_CONDUCT.md        # Contributor Covenant Code of Conduct
-└── SECURITY.md                # Security policy and vulnerability disclosure
+└── SECURITY.md                # Security policy and disclosure process
 ```
+
+---
+
+## Security & Non-Custodial Assurances
+
+1. **Owner Custody**: The master owner wallet maintains complete custody over all assets. No funds can move without cryptographically verified user approvals.
+2. **Deterministic Rules Over AI Outputs**: Large language models (LLMs) are strictly restricted to advisory drafting and natural language mandate compilation. All financial authorizations are evaluated by deterministic code.
+3. **Dual-Key Isolation**: The operational agent key cannot modify policy boundaries, cannot redirect withdrawal recipients, and cannot exceed allocated trading volumes.
+4. **Tenant Isolation**: Multi-tenant sessions and portfolios are strictly separated by session tokens and wallet addresses.
 
 ---
 
 ## Contributing
 
-We welcome contributions from the community. Please review our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before opening a pull request.
-
----
-
-## Security
-
-To report security vulnerabilities, please refer to our [Security Policy](SECURITY.md).
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for contribution guidelines.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.

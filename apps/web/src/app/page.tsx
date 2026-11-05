@@ -207,7 +207,7 @@ export default function MoiAppPage() {
   const [selectedInvoiceQrUrl, setSelectedInvoiceQrUrl] = useState<string>('');
   const [invoiceCopiedId, setInvoiceCopiedId] = useState<string | null>(null);
 
-  // Receive Modal: Tab switch between Deposit Address & Payment Invoice (Cobro Feature)
+  // Receive Modal: Tab switch between Deposit Address & Payment Request
   const [receiveViewTab, setReceiveViewTab] = useState<'address' | 'invoice'>('address');
   const [invoiceClientName, setInvoiceClientName] = useState('Acme Corp');
   const [invoiceRef, setInvoiceRef] = useState('INV-2026-001');
@@ -216,7 +216,7 @@ export default function MoiAppPage() {
   const [invoiceQrUrl, setInvoiceQrUrl] = useState('');
   const [invoiceCopied, setInvoiceCopied] = useState(false);
 
-  // Target Savings Allocation Slider (NairaGuard Feature)
+  // Target Portfolio Allocation Slider & Drift Guard
   const [targetUsdPercent, setTargetUsdPercent] = useState<number>(70);
 
   const [showNewAgentModal, setShowNewAgentModal] = useState(false);
@@ -733,7 +733,7 @@ export default function MoiAppPage() {
     treasuryData?.agentWalletAddress,
   ]);
 
-  // Dynamic Invoice QR generation (Cobro Feature)
+  // Dynamic Invoice QR generation
   useEffect(() => {
     if (!showReceiveModal || receiveViewTab !== 'invoice') return;
     const dest = treasuryData?.treasury?.ownerWalletAddress || '0x479253b82Eb63eb36F140EcABf0237cc338084e7';
@@ -978,7 +978,7 @@ export default function MoiAppPage() {
     };
   }, [treasuryData?.liveBalances, activeBaseRate]);
 
-  // Target Savings & Portfolio Allocation Drift (NairaGuard Feature)
+  // Target Portfolio Allocation Drift Guard
   const { currentUsdPercent, currentLocalPercent, portfolioDriftPercent, rebalanceSuggestedAction } = useMemo(() => {
     if (totalInUsd <= 0) {
       return {
@@ -3113,7 +3113,7 @@ export default function MoiAppPage() {
               </div>
             </div>
 
-            {/* Target Portfolio Allocation & Auto-Rebalance (NairaGuard Feature) */}
+            {/* Target Portfolio Allocation & Auto-Rebalance Guard */}
             <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -5769,7 +5769,7 @@ export default function MoiAppPage() {
               ) : (
                 /* Connected State with Dynamic QR Code and Toggle */
                 <>
-                  {/* Cobro Mode Switcher: Address vs Payment Request */}
+                  {/* Payment Mode Switcher: Address vs Payment Request */}
                   <div className="flex items-center gap-1 p-1 bg-[#F8FAFC] border border-[#0B0F14]/10 rounded-xl mb-3">
                     <button
                       type="button"
@@ -5917,7 +5917,7 @@ export default function MoiAppPage() {
                   </div>
                     </>
                   ) : (
-                    /* Cobro-Style Payment Request & Invoice Generator */
+                    /* Payment Request & Invoice Generator */
                     <div className="space-y-3.5">
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="space-y-1">
@@ -5991,7 +5991,7 @@ export default function MoiAppPage() {
                         </div>
                         <div className="space-y-1 text-left flex-1 min-w-0">
                           <span className="px-2 py-0.5 rounded-full bg-[#B6F7D2]/60 text-[#087F5B] text-[10px] font-bold">
-                            Cobro Invoice Standard · Celo Pay
+                            MOI Invoicing Protocol · Celo Mainnet
                           </span>
                           <p className="text-xs font-bold text-[#0B0F14] truncate">
                             Requesting {invoiceAmount} {invoiceToken}

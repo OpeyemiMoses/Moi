@@ -41,3 +41,4 @@ Instead, please send an encrypted or direct email report to:
 * **Triage & Assessment**: Within 72 hours.
 * **Remediation & Patch**: Target delivery within 7 days, depending on severity.
 * **Public Disclosure**: Coordinated after fixes have been applied and deployed.
+
