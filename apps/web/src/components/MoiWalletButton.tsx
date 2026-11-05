@@ -120,3 +120,4 @@ export function MoiWalletButton({ className = '', size = 'md' }: MoiWalletButton
     </ConnectButton.Custom>
   );
 }
+

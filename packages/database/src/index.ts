@@ -755,16 +755,29 @@ export class MoiDatabase {
   }
 
   deauthenticateWallet(): UserProfileRecord {
+    return this.resetProfileOnDisconnect();
+  }
+
+  resetProfileOnDisconnect(): UserProfileRecord {
     this.state = this.getState();
-    const updatedUser: UserProfileRecord = {
-      ...this.state.userProfile,
+    const defaultProfile: UserProfileRecord = {
+      id: 'usr_default',
+      displayName: 'Operator',
+      email: '',
+      organization: 'MOI Global Treasury',
+      roleTitle: 'Treasury Manager',
+      primaryRegion: 'Nigeria & LatAm Corridors',
+      preferredBaseSymbol: 'cNGN',
+      walletAddress: null,
       walletConnected: false,
       siweVerified: false,
-      walletAddress: null,
-      siweSignaturePreview: undefined,
+      avatarInitials: 'OP',
+      notifyOnPolicyReject: true,
+      notifyOnSwapSettled: true,
+      notifyOnX402Purchase: true,
       updatedAt: new Date().toISOString(),
     };
-    this.state.userProfile = updatedUser;
+    this.state.userProfile = defaultProfile;
     this.state.treasury.ownerWalletAddress = null;
     for (const t of this.state.treasuries || []) {
       if (t.id === this.state.treasury.id) {
@@ -775,11 +788,11 @@ export class MoiDatabase {
       treasuryId: this.state.treasury.id,
       category: 'SECURITY_CONTROL',
       severity: 'INFO',
-      title: 'Operator Logged Out',
-      detail: 'Operator session cleared and wallet deauthenticated.',
+      title: 'Operator Disconnected',
+      detail: 'Wallet disconnected. Operator profile and active session reset.',
     });
     this.save();
-    return updatedUser;
+    return defaultProfile;
   }
 
   updateOwnerWallet(address: `0x${string}`): MoiDatabaseState {

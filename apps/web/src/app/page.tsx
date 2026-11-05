@@ -637,10 +637,12 @@ export default function MoiAppPage() {
     }
   };
 
-  const fetchAllData = useCallback(async () => {
+  const fetchAllData = useCallback(async (walletOverride?: string | null) => {
     try {
+      const activeWallet = walletOverride !== undefined ? walletOverride : (wagmiAddress || null);
+      const treasuryUrl = activeWallet ? `/api/treasury?wallet=${activeWallet}` : '/api/treasury';
       const [tRes, bRes, sRes, iRes] = await Promise.all([
-        fetch('/api/treasury'),
+        fetch(treasuryUrl),
         fetch('/api/buy'),
         fetch('/api/pricing/stitch?symbol=cNGN'),
         fetch('/api/identity/agent.json'),
@@ -658,15 +660,15 @@ export default function MoiAppPage() {
 
       if (tJson?.userProfile) {
         setProfileForm({
-          displayName: tJson.userProfile.displayName || 'Treasury Operator',
-          email: tJson.userProfile.email || 'treasury@company.co',
+          displayName: tJson.userProfile.displayName || '',
+          email: tJson.userProfile.email || '',
           organization: tJson.userProfile.organization || 'MOI Global Treasury',
           roleTitle: tJson.userProfile.roleTitle || 'Treasury Manager',
           primaryRegion: tJson.userProfile.primaryRegion || 'Nigeria & LatAm Corridors',
           preferredBaseSymbol: (tJson.userProfile.preferredBaseSymbol as AssetSymbol) || 'cNGN',
         });
-        setAuthNameInput(tJson.userProfile.displayName || 'Treasury Operator');
-        setAuthEmailInput(tJson.userProfile.email || 'treasury@company.co');
+        setAuthNameInput(tJson.userProfile.displayName || '');
+        setAuthEmailInput(tJson.userProfile.email || '');
         setAuthOrgInput(tJson.userProfile.organization || 'MOI Global Treasury');
         setAuthRoleInput(tJson.userProfile.roleTitle || 'Treasury Manager');
         setAuthRegionInput(tJson.userProfile.primaryRegion || 'Nigeria & LatAm Corridors');
@@ -675,8 +677,8 @@ export default function MoiAppPage() {
         }
       }
 
-      // If user has a valid active server session, restore dashboard view automatically
-      if (tJson?.authenticated) {
+      // If user has a valid active server session or connected wallet, show app view
+      if (tJson?.authenticated || activeWallet) {
         setViewMode('app');
       }
     } catch (err) {
@@ -684,7 +686,7 @@ export default function MoiAppPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [wagmiAddress]);
 
   useEffect(() => {
     fetchAllData();
@@ -703,44 +705,29 @@ export default function MoiAppPage() {
     }
   }, [fetchAllData]);
 
-  // Automatic SIWE bridge when connected via RainbowKit SDK
-  const handleSiweWithWagmi = useCallback(async (walletAddr: `0x${string}`) => {
-    try {
-      setAuthWalletLoading(true);
-      const nonceRes = await fetch(`/api/auth/nonce?wallet=${walletAddr}`);
-      const nonceData = await nonceRes.json();
-      if (!nonceRes.ok || !nonceData.ok) return;
-
-      const signature = await signMessageAsync({ message: nonceData.message });
-
-      const verifyRes = await fetch('/api/auth/verify', {
+  // Synchronize wallet state with backend: binds profile to connected wallet and resets on disconnect
+  useEffect(() => {
+    if (isWagmiConnected && wagmiAddress) {
+      fetch('/api/treasury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: nonceData.message,
-          signature,
-          profile: {
-            walletAddress: walletAddr,
-          },
+          action: 'sync_wallet',
+          walletAddress: wagmiAddress,
         }),
+      }).then(() => {
+        fetchAllData(wagmiAddress);
       });
-      const verifyData = await verifyRes.json();
-      if (verifyRes.ok && verifyData.ok) {
-        setViewMode('app');
-        fetchAllData();
-      }
-    } catch (err) {
-      console.log('RainbowKit wallet connected; user can sign in when ready.');
-    } finally {
-      setAuthWalletLoading(false);
+    } else if (!isWagmiConnected) {
+      fetch('/api/treasury', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect_wallet' }),
+      }).then(() => {
+        fetchAllData(null);
+      });
     }
-  }, [signMessageAsync, fetchAllData]);
-
-  useEffect(() => {
-    if (isWagmiConnected && wagmiAddress && treasuryData && !treasuryData.authenticated) {
-      handleSiweWithWagmi(wagmiAddress);
-    }
-  }, [isWagmiConnected, wagmiAddress, treasuryData, handleSiweWithWagmi]);
+  }, [isWagmiConnected, wagmiAddress, fetchAllData]);
 
   // Handle wallet change event from browser extension
   useEffect(() => {
@@ -1477,8 +1464,13 @@ export default function MoiAppPage() {
       try {
         wagmiDisconnect();
       } catch {}
+      await fetch('/api/treasury', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect_wallet' }),
+      });
       await fetch('/api/auth/logout', { method: 'POST' });
-      await fetchAllData();
+      await fetchAllData(null);
       setViewMode('landing');
     } catch {
       setViewMode('landing');
@@ -1489,15 +1481,19 @@ export default function MoiAppPage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
+      const activeWallet = wagmiAddress || treasuryData?.treasury?.ownerWalletAddress || null;
       await fetch('/api/treasury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'update_profile',
-          profile: profileForm,
+          profile: {
+            ...profileForm,
+            walletAddress: activeWallet,
+          },
         }),
       });
-      await fetchAllData();
+      await fetchAllData(activeWallet);
       setProfileSavedToast(true);
       setTimeout(() => setProfileSavedToast(false), 3000);
     } finally {
@@ -1720,14 +1716,21 @@ export default function MoiAppPage() {
     a.click();
   };
 
+  const activeOwnerWallet = (
+    wagmiAddress ||
+    treasuryData?.treasury?.ownerWalletAddress ||
+    treasuryData?.userProfile?.walletAddress ||
+    ''
+  ).toLowerCase();
+
   const hasConnectedOwnerWallet = Boolean(
-    treasuryData?.treasury?.ownerWalletAddress &&
-      treasuryData.treasury.ownerWalletAddress !== '0x0000000000000000000000000000000000000000' &&
-      !treasuryData.treasury.ownerWalletAddress.startsWith('0x00000000')
+    activeOwnerWallet &&
+      activeOwnerWallet !== '0x0000000000000000000000000000000000000000' &&
+      !activeOwnerWallet.startsWith('0x00000000')
   );
 
   const ownerWalletShort = hasConnectedOwnerWallet
-    ? `${treasuryData.treasury.ownerWalletAddress.slice(0, 6)}...${treasuryData.treasury.ownerWalletAddress.slice(-4)}`
+    ? `${activeOwnerWallet.slice(0, 6)}...${activeOwnerWallet.slice(-4)}`
     : 'Not Connected';
 
   const anyMandatePaused = treasuryData?.mandates?.every(
@@ -1757,49 +1760,50 @@ export default function MoiAppPage() {
         />
 
         {/* Navigation Bar */}
-        <header className="relative z-20 max-w-6xl w-full mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <MoiRibbonMark className="w-8 h-6.5" />
+        <header className="relative z-20 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <MoiRibbonMark className="w-8 h-6.5 shrink-0" />
             <div>
               <span className="text-lg font-black tracking-tight text-[#0B0F14] block leading-none">
                 MOI
               </span>
-              <span className="text-[8.5px] font-semibold text-[#087F5B] tracking-wider uppercase">
+              <span className="text-[9px] font-semibold text-[#087F5B] tracking-wider uppercase whitespace-nowrap block mt-0.5">
                 Autonomous Treasury OS
               </span>
             </div>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-6 text-[11px] font-semibold text-[#0B0F14]/70">
-            <a href="#workflow" className="hover:text-[#087F5B] transition">
+          <nav className="hidden xl:flex items-center gap-6 text-[11px] font-semibold text-[#0B0F14]/70">
+            <a href="#workflow" className="hover:text-[#087F5B] transition whitespace-nowrap">
               How It Works
             </a>
-            <a href="#simulator" className="hover:text-[#087F5B] transition">
+            <a href="#simulator" className="hover:text-[#087F5B] transition whitespace-nowrap">
               Live RFQ Simulator
             </a>
-            <a href="#pillars" className="hover:text-[#087F5B] transition">
+            <a href="#pillars" className="hover:text-[#087F5B] transition whitespace-nowrap">
               6 Core Pillars
             </a>
-            <a href="#corridors" className="hover:text-[#087F5B] transition">
+            <a href="#corridors" className="hover:text-[#087F5B] transition whitespace-nowrap">
               Corridors & Telemetry
             </a>
             <a
               href="/api/identity/agent.json"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-[#087F5B] transition flex items-center gap-1"
+              className="hover:text-[#087F5B] transition inline-flex items-center gap-1 whitespace-nowrap"
             >
-              Docs (ERC-8004) <ArrowUpRight className="w-3 h-3" />
+              <span>Docs (ERC-8004)</span>
+              <ArrowUpRight className="w-3 h-3 shrink-0" />
             </a>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleLaunchApp}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer"
             >
-              <LayoutDashboard className="w-3 h-3 text-[#087F5B]" />
-              Enter Treasury OS
+              <LayoutDashboard className="w-3.5 h-3.5 text-[#087F5B]" />
+              <span>Enter Treasury OS</span>
             </button>
             <MoiWalletButton size="sm" />
           </div>
@@ -2944,24 +2948,27 @@ export default function MoiAppPage() {
         {/* Top App Header Strip with Mode Pill & Clickable Profile Chip */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#0B0F14]/8">
           <div className="flex items-center gap-2 text-xs font-semibold text-[#0B0F14]/60">
-            <span>Celo Mainnet (42220)</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${hasConnectedOwnerWallet ? 'bg-[#00E676] animate-pulse' : 'bg-amber-400'}`} />
+              Celo Mainnet (42220)
+            </span>
             <span>·</span>
             <span className="text-[#087F5B] font-bold">
-              {profileForm.organization}
+              {profileForm.organization || 'MOI Global Treasury'}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <MoiWalletButton size="sm" />
 
             <button
               onClick={() => setActiveTab('profile')}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#0B0F14]/10 text-xs font-semibold transition"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white hover:bg-[#F8FAFC] border border-[#0B0F14]/10 text-xs font-semibold transition cursor-pointer"
             >
               <div className="w-5 h-5 rounded-full bg-[#00E676] text-[#0B0F14] font-bold text-[10px] flex items-center justify-center">
                 {userInitials}
               </div>
-              <span className="text-[#0B0F14]">{profileForm.displayName}</span>
+              <span className="text-[#0B0F14] font-semibold">{profileForm.displayName || 'Operator'}</span>
             </button>
           </div>
         </div>
@@ -2988,7 +2995,7 @@ export default function MoiAppPage() {
                   ERC-8021: {treasuryData?.attributionStatus?.configuredTag ?? 'celo_c9cb9a59fc4c'}
                 </span>
                 <button
-                  onClick={fetchAllData}
+                  onClick={() => fetchAllData()}
                   className="p-2.5 rounded-full bg-white border border-[#0B0F14]/10 hover:bg-[#F8FAFC] transition"
                   title="Refresh live Celo Mainnet state"
                 >
@@ -5222,15 +5229,20 @@ export default function MoiAppPage() {
                       Master Owner Authority
                     </div>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        treasuryData?.userProfile?.siweVerified
+                      className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold inline-flex items-center gap-1 ${
+                        hasConnectedOwnerWallet
                           ? 'bg-[#B6F7D2]/60 text-[#087F5B]'
                           : 'bg-amber-100 text-amber-800'
                       }`}
                     >
-                      {treasuryData?.userProfile?.siweVerified
-                        ? 'SIWE Verified'
-                        : 'Wallet Unverified'}
+                      {hasConnectedOwnerWallet ? (
+                        <>
+                          <CheckCircle2 className="w-2.5 h-2.5 text-[#087F5B]" />
+                          <span>Verified (Celo 42220)</span>
+                        </>
+                      ) : (
+                        <span>Wallet Unverified</span>
+                      )}
                     </span>
                   </div>
 
@@ -5239,18 +5251,13 @@ export default function MoiAppPage() {
                       Connected Celo Wallet Address
                     </label>
                     {hasConnectedOwnerWallet ? (
-                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#0B0F14]/10 flex items-center justify-between">
-                        <span className="font-mono-num font-bold text-xs truncate mr-2">
-                          {treasuryData?.treasury?.ownerWalletAddress}
+                      <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#00E676]/30 flex items-center justify-between">
+                        <span className="font-mono-num font-bold text-xs truncate mr-2 text-[#0B0F14]">
+                          {activeOwnerWallet}
                         </span>
                         <button
-                          onClick={() =>
-                            copyToClipboard(
-                              treasuryData?.treasury?.ownerWalletAddress || '',
-                              'owner_wallet'
-                            )
-                          }
-                          className="p-1 rounded hover:bg-slate-200 text-[#0B0F14]/60 shrink-0"
+                          onClick={() => copyToClipboard(activeOwnerWallet, 'owner_wallet')}
+                          className="p-1 rounded hover:bg-slate-200 text-[#0B0F14]/60 shrink-0 cursor-pointer"
                           title="Copy address"
                         >
                           {copiedKey === 'owner_wallet' ? (
@@ -5265,12 +5272,7 @@ export default function MoiAppPage() {
                         <span className="text-xs text-[#0B0F14]/50 italic">
                           No wallet connected
                         </span>
-                        <button
-                          onClick={handleOpenSignIn}
-                          className="px-2 py-1 rounded bg-[#00E676] text-[#0B0F14] text-[10px] font-bold hover:bg-[#00c968] transition"
-                        >
-                          Connect Now
-                        </button>
+                        <MoiWalletButton size="sm" />
                       </div>
                     )}
                   </div>
@@ -5279,21 +5281,20 @@ export default function MoiAppPage() {
                     This wallet holds root administrative authority over treasury mandates, reserve thresholds, and emergency pause stops.
                   </p>
 
-                  <button
-                    onClick={handleOpenSignIn}
-                    className="w-full py-2 rounded-lg border border-[#0B0F14]/15 hover:bg-[#F8FAFC] text-xs font-semibold text-[#0B0F14] transition flex items-center justify-center gap-1.5"
-                  >
-                    <Wallet className="w-3.5 h-3.5 text-[#087F5B]" />
-                    Switch / Reconnect Owner Wallet
-                  </button>
+                  <div className="pt-1 space-y-2">
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-[#F8FAFC] border border-[#0B0F14]/8">
+                      <span className="text-xs font-semibold text-[#0B0F14]/70">Wallet Status</span>
+                      <MoiWalletButton size="sm" />
+                    </div>
 
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full py-2 rounded-lg border border-red-500/20 hover:bg-red-50 text-xs font-semibold text-red-600 transition flex items-center justify-center gap-1.5"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Sign Out of Treasury
-                  </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full py-2 rounded-lg border border-red-500/20 hover:bg-red-50 text-xs font-semibold text-red-600 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Disconnect & Reset Session</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Restricted Agent Signer Card */}

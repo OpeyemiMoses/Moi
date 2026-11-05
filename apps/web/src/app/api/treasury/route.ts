@@ -21,57 +21,35 @@ export async function GET(req: NextRequest) {
   let targetWallet: `0x${string}` | null = null;
   let isDisconnected = false;
 
-  if (auth.authenticated && auth.user) {
+  const walletParam = req.nextUrl.searchParams.get('wallet');
+
+  if (walletParam && /^0x[a-fA-F0-9]{40}$/.test(walletParam)) {
+    targetWallet = walletParam as `0x${string}`;
+    const user = moiDb.authenticateVerifiedWallet(targetWallet);
+    targetState = moiDb.getTenantState(user.id);
+  } else if (auth.authenticated && auth.user) {
     // Multi-tenant: derive state strictly from authenticated user session
     targetState = moiDb.getTenantState(auth.user.id);
     targetWallet = targetState.treasury.ownerWalletAddress || null;
   } else {
-    // Unauthenticated / Disconnected fallback
-    const walletParam = req.nextUrl.searchParams.get('wallet');
+    // Unauthenticated / Disconnected fallback: strictly reset to clean zero state
+    isDisconnected = true;
+    moiDb.resetProfileOnDisconnect();
     const dbState = moiDb.getState();
-    if (walletParam && /^0x[a-fA-F0-9]{40}$/.test(walletParam)) {
-      targetWallet = walletParam as `0x${string}`;
-      targetState = {
-        userProfile: {
-          ...dbState.userProfile,
-          walletAddress: targetWallet,
-          walletConnected: true,
-          siweVerified: false,
-        },
-        treasury: {
-          ...dbState.treasury,
-          ownerWalletAddress: targetWallet,
-        },
-        agents: dbState.agents,
-        mandates: dbState.mandates,
-        executions: [],
-        ledgerEntries: [],
-        servicePurchases: [],
-        auditEvents: [],
-        invoices: [],
-      };
-    } else {
-      isDisconnected = true;
-      targetState = {
-        userProfile: {
-          ...dbState.userProfile,
-          walletAddress: null,
-          walletConnected: false,
-          siweVerified: false,
-        },
-        treasury: {
-          ...dbState.treasury,
-          ownerWalletAddress: null,
-        },
-        agents: dbState.agents,
-        mandates: dbState.mandates,
-        executions: [],
-        ledgerEntries: [],
-        servicePurchases: [],
-        auditEvents: [],
-        invoices: [],
-      };
-    }
+    targetState = {
+      userProfile: dbState.userProfile,
+      treasury: {
+        ...dbState.treasury,
+        ownerWalletAddress: null,
+      },
+      agents: dbState.agents,
+      mandates: dbState.mandates,
+      executions: [],
+      ledgerEntries: [],
+      servicePurchases: [],
+      auditEvents: [],
+      invoices: [],
+    };
   }
 
   const [liveBalances, attributionStatus] = await Promise.all([
@@ -217,9 +195,41 @@ export async function POST(req: NextRequest) {
         ? auth.user.id
         : moiDb.getState().userProfile.id || 'usr_primary_operator';
 
+    if (action === 'sync_wallet') {
+      const wallet = body.walletAddress as string | undefined;
+      if (!wallet || !/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+        return NextResponse.json({ error: 'Valid wallet address required' }, { status: 400 });
+      }
+      const user = moiDb.authenticateVerifiedWallet(wallet as `0x${string}`, body.profile);
+      const tenantState = moiDb.getTenantState(user.id);
+      return NextResponse.json({
+        ok: true,
+        userProfile: user,
+        treasury: tenantState.treasury,
+        authenticated: true,
+      });
+    }
+
+    if (action === 'disconnect_wallet') {
+      moiDb.resetProfileOnDisconnect();
+      const dbState = moiDb.getState();
+      return NextResponse.json({
+        ok: true,
+        userProfile: dbState.userProfile,
+        treasury: dbState.treasury,
+        authenticated: false,
+      });
+    }
+
     if (action === 'update_profile') {
-      const updatedUser = moiDb.updateProfileForTenant(body.profile || {}, tenantUserId);
-      const tenantState = moiDb.getTenantState(tenantUserId);
+      const wallet = body.profile?.walletAddress;
+      let targetId = tenantUserId;
+      if (wallet && /^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+        const user = moiDb.authenticateVerifiedWallet(wallet as `0x${string}`, body.profile);
+        targetId = user.id;
+      }
+      const updatedUser = moiDb.updateProfileForTenant(body.profile || {}, targetId);
+      const tenantState = moiDb.getTenantState(targetId);
       return NextResponse.json({
         ok: true,
         treasury: tenantState.treasury,
