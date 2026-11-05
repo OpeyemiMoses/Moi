@@ -1,0 +1,43 @@
+{
+  "name": "moi-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MOI — Autonomous Treasury Operating System on Celo Mainnet (Textile FX v2, Ripio wFIAT, buy/x402, ERC-8004, ERC-8021)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @moi/web run dev",
+    "build": "npm --workspace @moi/web run build",
+    "start": "npm --workspace @moi/web run start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@celo/attribution-tags": "^0.5.0",
+    "@celo/buy": "^0.8.5",
+    "@electric-sql/pglite": "^0.5.14",
+    "@x402/evm": "^2.29.0",
+    "@x402/fetch": "^2.29.0",
+    "lucide-react": "^0.460.0",
+    "next": "15.1.6",
+    "pg": "^8.23.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "viem": "^2.23.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

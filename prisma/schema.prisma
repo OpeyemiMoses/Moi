@@ -1,0 +1,213 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String?     @unique
+  walletAddress String      @unique
+  name          String?
+  role          String?     @default("treasurer")
+  company       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  sessions      Session[]
+  treasuries    Treasury[]
+
+  @@index([walletAddress])
+}
+
+model Session {
+  id                String    @id @default(cuid())
+  userId            String
+  walletAddress     String
+  tokenHash         String    @unique
+  createdAt         DateTime  @default(now())
+  lastActiveAt      DateTime  @default(now())
+  expiresAt         DateTime
+  absoluteExpiresAt DateTime
+  revoked           Boolean   @default(false)
+  revokedAt         DateTime?
+  ipAddress         String?
+  userAgent         String?
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([walletAddress])
+  @@index([tokenHash])
+}
+
+model Nonce {
+  nonce         String    @id
+  walletAddress String
+  expiresAt     DateTime
+  consumed      Boolean   @default(false)
+  consumedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([walletAddress])
+}
+
+model Treasury {
+  id                 String   @id @default(cuid())
+  ownerUserId        String?
+  name               String
+  ownerWalletAddress String
+  agentWalletAddress String
+  chainId            Int      @default(42220)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  ownerUser          User?    @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([ownerUserId])
+  @@index([ownerWalletAddress])
+}
+
+model Agent {
+  id              String   @id
+  treasuryId      String
+  name            String
+  role            String
+  description     String
+  walletAddress   String
+  erc8004AgentId  Int?
+  erc8004Registry String   @default("0x8004A169FB4a3325136EB29fA0ceB6D2e539a432")
+  active          Boolean  @default(true)
+  mandateId       String
+  lastCycleAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([treasuryId])
+}
+
+model Mandate {
+  id                        String   @id
+  treasuryId                String
+  agentId                   String
+  name                      String
+  naturalLanguageIntent     String?
+  mode                      String
+  executionStrategy         String
+  chainId                   Int      @default(42220)
+  sellToken                 String
+  buyToken                  String
+  minimumReserveAtomic      String
+  maxTradeAtomic            String
+  dailySellCapAtomic        String
+  minBuyAmountAtomic        String?
+  maxSlippageBps            Int      @default(100)
+  maxProtocolFeeBps         Int      @default(25)
+  maxDailyLossAtomic        String?
+  allowedTargets            String[]
+  serviceSpendPerCallAtomic String   @default("50000")
+  serviceDailyCapAtomic     String   @default("500000")
+  stitchBaseSpreadBps       Int      @default(18)
+  stitchInventorySkewBps    Int      @default(12)
+  paused                    Boolean  @default(false)
+  updatedAt                 DateTime @updatedAt
+
+  @@index([treasuryId])
+}
+
+model Execution {
+  id                    String   @id
+  idempotencyKey        String   @unique
+  treasuryId            String
+  mandateId             String
+  agentId               String
+  rfqId                 String?
+  claimToken            String?
+  state                 String
+  sellToken             String
+  buyToken              String
+  sellSymbol            String
+  buySymbol             String
+  requestedSellAtomic   String
+  quotedTakerPaysAtomic String?
+  quotedBuyAmountAtomic String?
+  quotedFeeAtomic       String?
+  settledSellAtomic     String?
+  settledBuyAtomic      String?
+  settledFeeAtomic      String?
+  gasUsedAtomic         String?
+  rateRay               String?
+  quoteExpiresAt        String?
+  approvalTxHash        String?
+  swapTxHash            String?
+  blockNumber           String?
+  attributionTag        String?
+  attributionVerified   Boolean?
+  failureReason         String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([treasuryId])
+  @@index([idempotencyKey])
+}
+
+model LedgerEntry {
+  id                String   @id
+  journalId         String
+  executionId       String?
+  servicePurchaseId String?
+  treasuryId        String
+  accountCode       String
+  accountName       String
+  accountType       String
+  direction         String
+  assetSymbol       String
+  amountAtomic      String
+  decimals          Int
+  txHash            String?
+  blockNumber       String?
+  memo              String
+  createdAt         DateTime @default(now())
+
+  @@index([treasuryId])
+}
+
+model ServicePurchase {
+  id                    String   @id
+  treasuryId            String
+  agentId               String
+  executionId           String?
+  capabilityId          String
+  providerName          String
+  endpointUrl           String
+  paymentTokenSymbol    String
+  paymentTokenAddress   String
+  priceUsd              String
+  amountAtomic          String
+  status                String
+  paymentTxHash         String?
+  payToAddress          String
+  erc8004ProviderAgentId Int?
+  requestSummary        String
+  responseSummary       String
+  policyReason          String?
+  createdAt             DateTime @default(now())
+
+  @@index([treasuryId])
+}
+
+model AuditEvent {
+  id          String   @id
+  treasuryId  String
+  agentId     String?
+  executionId String?
+  category    String
+  severity    String
+  title       String
+  detail      String
+  createdAt   DateTime @default(now())
+
+  @@index([treasuryId])
+}

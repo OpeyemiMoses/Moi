@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+  moi-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: moi-web:production
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    env_file:
+      - .env.production
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - moi_internal
+      - moi_public
+
+  moi-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: moi-worker:production
+    restart: always
+    command: ['npm', 'run', 'worker']
+    environment:
+      - NODE_ENV=production
+      - WORKER_ROLE=treasury_cycle_runner
+    env_file:
+      - .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    stop_grace_period: 30s
+    networks:
+      - moi_internal
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-moi_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-moi_production}
+    volumes:
+      - moi_prod_pgdata:/var/lib/postgresql/data
+      - ./packages/database/src/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER:-moi_admin} -d $${POSTGRES_DB:-moi_production}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - moi_internal
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: ['redis-server', '--appendonly', 'yes', '--requirepass', '${REDIS_PASSWORD}']
+    volumes:
+      - moi_prod_redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - moi_internal
+
+volumes:
+  moi_prod_pgdata:
+    driver: local
+  moi_prod_redisdata:
+    driver: local
+
+networks:
+  moi_internal:
+    internal: true
+  moi_public:
+    driver: bridge
+

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none">
+  <defs>
+    <linearGradient id="moiMintLeft" x1="12" y1="104" x2="62" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00E676" />
+      <stop offset="65%" stop-color="#087F5B" />
+      <stop offset="100%" stop-color="#0B0F14" />
+    </linearGradient>
+    <linearGradient id="moiFoldLeft" x1="38" y1="16" x2="84" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0B0F14" />
+      <stop offset="55%" stop-color="#0D281E" />
+      <stop offset="100%" stop-color="#087F5B" />
+    </linearGradient>
+    <linearGradient id="moiMintCenter" x1="68" y1="98" x2="118" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00C853" />
+      <stop offset="50%" stop-color="#00E676" />
+      <stop offset="100%" stop-color="#5EFC82" />
+    </linearGradient>
+    <linearGradient id="moiFoldRight" x1="104" y1="18" x2="146" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0B0F14" />
+      <stop offset="50%" stop-color="#087F5B" />
+      <stop offset="100%" stop-color="#00E676" />
+    </linearGradient>
+  </defs>
+  <!-- Left Dark Ribbon Fold -->
+  <path d="M36 22C42 12 56 12 62 22L92 78C96 86 90 96 80 96H68C61 96 55 92 52 86L28 40L36 22Z" fill="url(#moiFoldLeft)" />
+  <!-- Right Dark Ribbon Leg -->
+  <path d="M98 22C104 12 118 12 124 22L148 76C153 87 145 100 133 100H122C114 100 107 95 104 87L88 50L98 22Z" fill="url(#moiFoldRight)" />
+  <!-- Left Bright Mint Upstroke -->
+  <path d="M12 76L36 22C42 11 57 11 63 22L50 52L38 86C34 96 24 100 16 96C8 92 7 84 12 76Z" fill="url(#moiMintLeft)" />
+  <!-- Center Bright Mint Diagonal Ribbon -->
+  <path d="M62 78L96 20C102 10 117 10 123 20C127 27 126 36 121 44L88 92C81 101 67 100 61 90C58 86 59 82 62 78Z" fill="url(#moiMintCenter)" />
+</svg>
+

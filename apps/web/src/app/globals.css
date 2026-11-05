@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --moi-midnight: #0B0F14;
+  --moi-mint: #00E676;
+  --moi-soft-mint: #B6F7D2;
+  --moi-light-gray: #F8FAFC;
+}
+
+body {
+  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #F8FAFC;
+  color: #0B0F14;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   3D RIBBON "M" & MOVING 3D SPIRAL ORBIT ANIMATIONS
+   ============================================================================ */
+.moi-3d-scene {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.moi-3d-emblem-float {
+  transform-style: preserve-3d;
+  animation: moiEmblemFloat3D 7s ease-in-out infinite;
+}
+
+@keyframes moiEmblemFloat3D {
+  0%, 100% {
+    transform: rotateX(8deg) rotateY(-14deg) rotateZ(0deg) translateY(0px);
+  }
+  25% {
+    transform: rotateX(12deg) rotateY(-4deg) rotateZ(1.5deg) translateY(-12px);
+  }
+  50% {
+    transform: rotateX(4deg) rotateY(12deg) rotateZ(-1deg) translateY(-18px);
+  }
+  75% {
+    transform: rotateX(-5deg) rotateY(-6deg) rotateZ(1deg) translateY(-8px);
+  }
+}
+
+.moi-spiral-orbit-cw {
+  animation: moiSpiralSpinCW 14s linear infinite;
+  transform-origin: 260px 230px;
+}
+
+.moi-spiral-orbit-ccw {
+  animation: moiSpiralSpinCCW 19s linear infinite;
+  transform-origin: 260px 230px;
+}
+
+.moi-spiral-dash-flow {
+  stroke-dasharray: 14 10;
+  animation: moiDashStream 3.2s linear infinite;
+}
+
+.moi-spiral-dash-flow-fast {
+  stroke-dasharray: 22 14;
+  animation: moiDashStreamReverse 2.4s linear infinite;
+}
+
+.moi-shadow-pulse {
+  animation: moiFloorShadow 7s ease-in-out infinite;
+}
+
+@keyframes moiSpiralSpinCW {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moiSpiralSpinCCW {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes moiDashStream {
+  0% {
+    stroke-dashoffset: 240;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes moiDashStreamReverse {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 360;
+  }
+}
+
+@keyframes moiFloorShadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.36;
+  }
+  50% {
+    transform: scale(0.84);
+    opacity: 0.2;
+  }
+}

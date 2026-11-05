@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build and compilation
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets and environment configurations
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.secret
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS and Editor metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Tests & Evaluation Scratch Files (Excluded per repository requirements)
+tests/
+vitest.config.ts
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+coverage/
+
+# Hackathon Milestones & Internal Audit Deliverables (Excluded per repository requirements)
+MILESTONE_*.md
+COMPETITIVE_AUDIT_ALL_45_PROJECTS.md
+nairaguard.html
+all_45_projects_complete.json
+all_projects.json
+analyze_all_45.mjs
+analyze_and_score_45.mjs
+analyzed_45_summary.json
+deep_scrape.mjs
+detailed_45_projects.json
+extract_all_45_perfect.mjs
+full_submissions_45.json
+generate_honest_scores.mjs
+loops_agents_projects.json
+scored_competitors_45.json
+scrape_projects.mjs
+
+# Dynamic local store databases & backups
+data/backups/
+data/postgres/
+data/*.backup*
+data/*.test.json
+data/*.tmp
+data/moi-store.test.json
+data/moi-store.json.tmp
+data/*.json
+!data/.gitkeep

@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "plugins": [{ "name": "next" }],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@moi/shared-types": ["../../packages/shared-types/src/index.ts"],
+      "@moi/policy-engine": ["../../packages/policy-engine/src/index.ts"],
+      "@moi/textile-adapter": ["../../packages/textile-adapter/src/index.ts"],
+      "@moi/wallet-signer": ["../../packages/wallet-signer/src/index.ts"],
+      "@moi/identity": ["../../packages/identity/src/index.ts"],
+      "@moi/buy-client": ["../../packages/buy-client/src/index.ts"],
+      "@moi/ledger": ["../../packages/ledger/src/index.ts"],
+      "@moi/database": ["../../packages/database/src/index.ts"],
+      "@moi/agent-core": ["../../packages/agent-core/src/index.ts"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
