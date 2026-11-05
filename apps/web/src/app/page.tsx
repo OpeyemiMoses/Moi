@@ -682,6 +682,19 @@ export default function MoiAppPage() {
 
   useEffect(() => {
     fetchAllData();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        if (['dashboard', 'agents', 'treasury', 'invoices', 'compliance', 'buy', 'transactions', 'profile', 'settings'].includes(tabParam)) {
+          setActiveTab(tabParam as AppTab);
+          setViewMode('app');
+        }
+      } else if (window.location.hash === '#invoices') {
+        setActiveTab('invoices');
+        setViewMode('app');
+      }
+    }
   }, [fetchAllData]);
 
   // Handle wallet change event from browser extension
