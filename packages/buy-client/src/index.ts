@@ -271,25 +271,25 @@ export class BuyX402ServiceClient {
     const defaultPayload =
       capability.id === 'chainstack.celo'
         ? {
-            jsonrpc: '2.0',
-            id: 1,
-            method: 'eth_blockNumber',
-            params: [],
-          }
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'eth_blockNumber',
+          params: [],
+        }
         : capability.id === 'x.posts.search'
           ? { query: 'Celo stablecoin cNGN wARS wBRL FX', type: 'latest' }
           : capability.id === 'cencori.v1.chat.completions'
             ? {
-                model: 'maximo-atlas-1.3',
-                max_tokens: 256,
-                messages: [
-                  {
-                    role: 'user',
-                    content:
-                      'Summarize treasury mandate compliance for Celo Mainnet RFQ settlement.',
-                  },
-                ],
-              }
+              model: 'maximo-atlas-1.3',
+              max_tokens: 256,
+              messages: [
+                {
+                  role: 'user',
+                  content:
+                    'Summarize treasury mandate compliance for Celo Mainnet RFQ settlement.',
+                },
+              ],
+            }
             : { durationMinutes: 1 };
 
     const bodyPayload = params.requestPayload ?? defaultPayload;

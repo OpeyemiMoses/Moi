@@ -47,6 +47,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { MoiHero3DEmblem, MoiRibbonMark } from '@/components/MoiLogo';
+import { MoiWalletButton } from '@/components/MoiWalletButton';
+import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
 import {
   AssetSymbol,
   CELO_VERIFIED_ASSETS,
@@ -73,6 +75,10 @@ type AppTab =
   | 'settings';
 
 export default function MoiAppPage() {
+  const { address: wagmiAddress, isConnected: isWagmiConnected } = useAccount();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
+  const { signMessageAsync } = useSignMessage();
+
   const [viewMode, setViewMode] = useState<'landing' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -696,6 +702,45 @@ export default function MoiAppPage() {
       }
     }
   }, [fetchAllData]);
+
+  // Automatic SIWE bridge when connected via RainbowKit SDK
+  const handleSiweWithWagmi = useCallback(async (walletAddr: `0x${string}`) => {
+    try {
+      setAuthWalletLoading(true);
+      const nonceRes = await fetch(`/api/auth/nonce?wallet=${walletAddr}`);
+      const nonceData = await nonceRes.json();
+      if (!nonceRes.ok || !nonceData.ok) return;
+
+      const signature = await signMessageAsync({ message: nonceData.message });
+
+      const verifyRes = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: nonceData.message,
+          signature,
+          profile: {
+            walletAddress: walletAddr,
+          },
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (verifyRes.ok && verifyData.ok) {
+        setViewMode('app');
+        fetchAllData();
+      }
+    } catch (err) {
+      console.log('RainbowKit wallet connected; user can sign in when ready.');
+    } finally {
+      setAuthWalletLoading(false);
+    }
+  }, [signMessageAsync, fetchAllData]);
+
+  useEffect(() => {
+    if (isWagmiConnected && wagmiAddress && treasuryData && !treasuryData.authenticated) {
+      handleSiweWithWagmi(wagmiAddress);
+    }
+  }, [isWagmiConnected, wagmiAddress, treasuryData, handleSiweWithWagmi]);
 
   // Handle wallet change event from browser extension
   useEffect(() => {
@@ -1429,6 +1474,9 @@ export default function MoiAppPage() {
   // Sign out of active treasury session
   const handleSignOut = async () => {
     try {
+      try {
+        wagmiDisconnect();
+      } catch {}
       await fetch('/api/auth/logout', { method: 'POST' });
       await fetchAllData();
       setViewMode('landing');
@@ -1753,13 +1801,7 @@ export default function MoiAppPage() {
               <LayoutDashboard className="w-3 h-3 text-[#087F5B]" />
               Enter Treasury OS
             </button>
-            <button
-              onClick={handleOpenSignIn}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#00E676] hover:bg-[#00C853] text-[#0B0F14] transition shadow-sm shadow-[#00E676]/20"
-            >
-              <Wallet className="w-3 h-3 text-[#0B0F14]" />
-              Connect Wallet
-            </button>
+            <MoiWalletButton size="sm" />
           </div>
         </header>
 
@@ -1795,13 +1837,7 @@ export default function MoiAppPage() {
                   Enter Treasury OS <ArrowRight className="w-3.5 h-3.5" />
                 </button>
 
-                <button
-                  onClick={handleOpenSignIn}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white hover:bg-[#F8FAFC] text-[#0B0F14] font-semibold text-xs border border-[#0B0F14]/15 transition shadow-xs"
-                >
-                  <Wallet className="w-3.5 h-3.5 text-[#087F5B]" />
-                  Connect Wallet (SIWE)
-                </button>
+                <MoiWalletButton size="lg" />
               </div>
 
               {/* 3 Badges matching Uploaded UI Kit */}
@@ -2916,30 +2952,7 @@ export default function MoiAppPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {!hasConnectedOwnerWallet ? (
-              <button
-                onClick={handleConnectBrowserWallet}
-                disabled={authWalletLoading}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#00E676] hover:bg-[#00c968] text-[#0B0F14] font-bold text-xs shadow-xs transition"
-              >
-                {authWalletLoading ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Connecting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Wallet className="w-3.5 h-3.5" />
-                    <span>Connect Wallet</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B6F7D2]/60 text-[#087F5B] border border-[#00E676]/30 text-xs font-mono-num font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#00E676] animate-pulse" />
-                <span>{ownerWalletShort}</span>
-              </div>
-            )}
+            <MoiWalletButton size="sm" />
 
             <button
               onClick={() => setActiveTab('profile')}

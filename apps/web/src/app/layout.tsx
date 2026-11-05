@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Web3Provider } from '@/components/Web3Provider';
 
 export const metadata: Metadata = {
   title: 'MOI — Your AI Agent. Your Treasury. | Autonomous Treasury OS on Celo',
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-[#F8FAFC] text-[#0B0F14] antialiased">
-        {children}
+        <Web3Provider>
+          {children}
+        </Web3Provider>
       </body>
     </html>
   );

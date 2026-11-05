@@ -46,6 +46,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  webpack: (config, { webpack }) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@x402/svm/exact/client': false,
+      '@x402/svm': false,
+    };
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^@x402\/svm/,
+      })
+    );
+    return config;
+  },
 };
 
 export default nextConfig;
