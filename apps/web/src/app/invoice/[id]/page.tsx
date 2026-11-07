@@ -315,7 +315,7 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
       <main className="max-w-xl mx-auto px-4 py-8 sm:py-12">
         {/* Status Notification Banner */}
         {isPaid ? (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 shadow-xs flex items-center gap-3 animate-in fade-in duration-300">
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 shadow-xs flex items-center gap-3 animate-in fade-in duration-300 card-pop reveal-pop">
             <div className="w-10 h-10 rounded-xl bg-[#00E676] text-[#0B0F14] flex items-center justify-center shrink-0 shadow-xs">
               <CheckCircle2 className="w-6 h-6" />
             </div>
@@ -332,7 +332,7 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
             </div>
           </div>
         ) : (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 shadow-xs flex items-center justify-between">
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 shadow-xs flex items-center justify-between card-pop reveal-pop">
             <div className="flex items-center gap-2.5">
               <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
               <div>
@@ -347,7 +347,7 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
         )}
 
         {/* Invoice Card */}
-        <div className="bg-white rounded-3xl border border-[#0B0F14]/10 shadow-xl overflow-hidden">
+        <div className="bg-white rounded-3xl border border-[#0B0F14]/10 shadow-xl overflow-hidden card-pop reveal-pop reveal-delay-100">
           {/* Card Header */}
           <div className="p-6 sm:p-8 bg-gradient-to-b from-[#F8FAFC] to-white border-b border-[#0B0F14]/8">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -556,7 +556,7 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
                         type="button"
                         onClick={handlePayInvoice}
                         disabled={isPaying || (!balanceLoading && !hasSufficientBalance)}
-                        className="w-full py-3.5 rounded-2xl bg-[#00E676] hover:bg-[#00c968] disabled:opacity-40 disabled:cursor-not-allowed text-[#0B0F14] font-black text-sm tracking-wide transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-3.5 rounded-2xl bg-[#00E676] hover:bg-[#00c968] disabled:opacity-40 disabled:cursor-not-allowed text-[#0B0F14] font-black text-sm tracking-wide transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer btn-pop hover-pop"
                       >
                         {isPaying ? (
                           <>

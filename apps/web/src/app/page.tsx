@@ -2109,18 +2109,18 @@ export default function MoiAppPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Left Copy */}
             <div className="lg:col-span-6 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B6F7D2]/60 border border-[#00E676]/40 text-[11px] font-bold text-[#087F5B]">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#B6F7D2]/60 border border-[#00E676]/40 text-[11px] font-bold text-[#087F5B] reveal-pop reveal-delay-50 hover-pop">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] animate-pulse" />
                 Live on Celo Mainnet (42220) · Textile FX v2 · Ripio · buy / x402 · ERC-8004
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.08] text-[#0B0F14]">
+              <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-[1.08] text-[#0B0F14] reveal-pop reveal-delay-100">
                 Your AI Agent.
                 <br />
                 Your Treasury.
               </h1>
 
-              <p className="text-xs sm:text-sm text-[#0B0F14]/65 max-w-md leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-[#0B0F14]/65 max-w-md leading-relaxed font-normal reveal-pop reveal-delay-150">
                 Autonomous, policy-bounded treasury operating system on Celo Mainnet.
                 Control, transact, and earn with AI agents on open rails—executing
                 Textile FX v2 RFQ conversions, passive textile-stitch market making,
@@ -2128,10 +2128,10 @@ export default function MoiAppPage() {
                 bounded by 17 deterministic rules.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="flex flex-wrap items-center gap-3 pt-1 reveal-pop reveal-delay-200">
                 <button
                   onClick={handleLaunchApp}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00E676] hover:bg-[#00C853] text-[#0B0F14] font-bold text-xs shadow-sm shadow-[#00E676]/20 transition transform active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#00E676] hover:bg-[#00C853] text-[#0B0F14] font-bold text-xs shadow-sm shadow-[#00E676]/20 transition transform active:scale-95 btn-pop"
                 >
                   Enter Treasury OS <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -2140,8 +2140,8 @@ export default function MoiAppPage() {
               </div>
 
               {/* 3 Badges matching Uploaded UI Kit */}
-              <div className="pt-6 grid grid-cols-3 gap-3 max-w-lg border-t border-[#0B0F14]/10">
-                <div className="flex items-center gap-2">
+              <div className="pt-6 grid grid-cols-3 gap-3 max-w-lg border-t border-[#0B0F14]/10 reveal-pop reveal-delay-250">
+                <div className="flex items-center gap-2 hover-pop">
                   <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#0B0F14]/10 flex items-center justify-center shrink-0">
                     <Bot className="w-3.5 h-3.5 text-[#087F5B]" />
                   </div>
@@ -2151,7 +2151,7 @@ export default function MoiAppPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 hover-pop">
                   <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#0B0F14]/10 flex items-center justify-center shrink-0">
                     <Globe className="w-3.5 h-3.5 text-[#087F5B]" />
                   </div>
@@ -2161,7 +2161,7 @@ export default function MoiAppPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 hover-pop">
                   <div className="w-8 h-8 rounded-full bg-[#F8FAFC] border border-[#0B0F14]/10 flex items-center justify-center shrink-0">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#087F5B]" />
                   </div>
@@ -2174,15 +2174,15 @@ export default function MoiAppPage() {
             </div>
 
             {/* Right Large 3D Ribbon M Emblem with Active Moving 3D Spirals */}
-            <div className="lg:col-span-6 flex justify-center">
+            <div className="lg:col-span-6 flex justify-center reveal-pop reveal-delay-200">
               <MoiHero3DEmblem />
             </div>
           </div>
         </section>
 
         {/* SECTION 1: LIVE INTERACTIVE RFQ SIMULATOR (Directly on Landing Page) */}
-        <section id="simulator" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8">
-          <div className="bg-[#0B0F14] text-white rounded-xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+        <section id="simulator" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 reveal-on-scroll">
+          <div className="bg-[#0B0F14] text-white rounded-xl p-4 sm:p-5 shadow-xl relative overflow-hidden card-pop reveal-pop reveal-delay-100">
             <div
               className="pointer-events-none absolute -top-32 right-0 w-[380px] h-[380px] rounded-full blur-3xl opacity-25"
               style={{ background: 'radial-gradient(circle, #00E676 0%, transparent 70%)' }}
@@ -2211,7 +2211,7 @@ export default function MoiAppPage() {
                     <button
                       key={sym}
                       onClick={() => setLandingPreviewSymbol(sym)}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 btn-pop ${
                         landingPreviewSymbol === sym
                           ? 'bg-[#00E676] text-[#0B0F14] shadow-sm shadow-[#00E676]/30'
                           : 'bg-white/5 text-white/75 hover:bg-white/10'
@@ -2274,8 +2274,8 @@ export default function MoiAppPage() {
         </section>
 
         {/* SECTION 2: 5-STEP AUTONOMOUS WORKFLOW */}
-        <section id="workflow" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8">
-          <div className="text-center max-w-2xl mx-auto mb-8">
+        <section id="workflow" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 reveal-on-scroll">
+          <div className="text-center max-w-2xl mx-auto mb-8 reveal-pop">
             <span className="px-3 py-1 rounded-full bg-[#B6F7D2]/60 text-[#087F5B] text-[11px] font-bold uppercase tracking-wider">
               End-to-End Operational Flow
             </span>
@@ -2322,7 +2322,17 @@ export default function MoiAppPage() {
             ].map((st, i) => (
               <div
                 key={st.step}
-                className="bg-[#F8FAFC] border border-[#0B0F14]/8 rounded-xl p-4 flex flex-col justify-between hover:border-[#00E676]/60 transition shadow-xs"
+                className={`bg-[#F8FAFC] border border-[#0B0F14]/8 rounded-xl p-4 flex flex-col justify-between hover:border-[#00E676]/60 transition shadow-xs card-pop reveal-pop ${
+                  i === 0
+                    ? 'reveal-delay-100'
+                    : i === 1
+                    ? 'reveal-delay-200'
+                    : i === 2
+                    ? 'reveal-delay-300'
+                    : i === 3
+                    ? 'reveal-delay-400'
+                    : 'reveal-delay-500'
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -2349,8 +2359,8 @@ export default function MoiAppPage() {
         </section>
 
         {/* SECTION 3: 6 CORE ARCHITECTURAL PILLARS */}
-        <section id="pillars" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 bg-[#F8FAFC] rounded-xl border border-[#0B0F14]/8 my-6">
-          <div className="text-center max-w-2xl mx-auto mb-8">
+        <section id="pillars" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 bg-[#F8FAFC] rounded-xl border border-[#0B0F14]/8 my-6 reveal-on-scroll">
+          <div className="text-center max-w-2xl mx-auto mb-8 reveal-pop">
             <span className="px-3 py-1 rounded-full bg-[#B6F7D2]/60 text-[#087F5B] text-[11px] font-bold uppercase tracking-wider">
               The Open Rails Stack
             </span>
@@ -2364,7 +2374,7 @@ export default function MoiAppPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Pillar 1 */}
-            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs card-pop reveal-pop reveal-delay-100">
               <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 flex items-center justify-center text-[#087F5B]">
                 <TrendingUp className="w-4 h-4" />
               </div>
@@ -2377,7 +2387,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Pillar 2 */}
-            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs card-pop reveal-pop reveal-delay-200">
               <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 flex items-center justify-center text-[#087F5B]">
                 <Layers className="w-4 h-4" />
               </div>
@@ -2390,7 +2400,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Pillar 3 */}
-            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs card-pop reveal-pop reveal-delay-300">
               <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 flex items-center justify-center text-[#087F5B]">
                 <Globe className="w-4 h-4" />
               </div>
@@ -2403,7 +2413,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Pillar 4 */}
-            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs card-pop reveal-pop reveal-delay-400">
               <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 flex items-center justify-center text-[#087F5B]">
                 <Zap className="w-4 h-4" />
               </div>
@@ -2416,7 +2426,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Pillar 5 */}
-            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs card-pop reveal-pop reveal-delay-500">
               <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 flex items-center justify-center text-[#087F5B]">
                 <ShieldCheck className="w-4 h-4" />
               </div>
@@ -2429,7 +2439,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Pillar 6 */}
-            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-4.5 border border-[#0B0F14]/8 space-y-2.5 shadow-xs card-pop reveal-pop reveal-delay-600">
               <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 flex items-center justify-center text-[#087F5B]">
                 <Lock className="w-4 h-4" />
               </div>
@@ -2444,8 +2454,8 @@ export default function MoiAppPage() {
         </section>
 
         {/* SECTION 4: CORRIDORS & CONTRACT TELEMETRY */}
-        <section id="corridors" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <section id="corridors" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 reveal-on-scroll">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-5 reveal-pop">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-[#087F5B]">
                 Verified Celo Mainnet Rails
@@ -2465,7 +2475,7 @@ export default function MoiAppPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8">
+            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8 card-pop reveal-pop reveal-delay-100">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-[#087F5B] bg-[#B6F7D2]/50 px-2 py-0.5 rounded-full">
                   Textile FX v2
@@ -2478,7 +2488,7 @@ export default function MoiAppPage() {
               </p>
             </div>
 
-            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8">
+            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8 card-pop reveal-pop reveal-delay-200">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-[#087F5B] bg-[#B6F7D2]/50 px-2 py-0.5 rounded-full">
                   Ripio LatAm wFIAT
@@ -2491,7 +2501,7 @@ export default function MoiAppPage() {
               </p>
             </div>
 
-            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8">
+            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8 card-pop reveal-pop reveal-delay-300">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-[#087F5B] bg-[#B6F7D2]/50 px-2 py-0.5 rounded-full">
                   textile-stitch
@@ -2504,7 +2514,7 @@ export default function MoiAppPage() {
               </p>
             </div>
 
-            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8">
+            <div className="bg-[#F8FAFC] rounded-xl p-3.5 border border-[#0B0F14]/8 card-pop reveal-pop reveal-delay-400">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-[#087F5B] bg-[#B6F7D2]/50 px-2 py-0.5 rounded-full">
                   buy / x402 + USA₮
@@ -2520,8 +2530,8 @@ export default function MoiAppPage() {
         </section>
 
         {/* SECTION 5: SECURITY & COMPLIANCE */}
-        <section id="security" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 mb-8">
-          <div className="bg-white border border-[#0B0F14]/10 rounded-xl p-5 sm:p-6 shadow-xs">
+        <section id="security" className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 py-6 sm:py-8 mb-8 reveal-on-scroll">
+          <div className="bg-white border border-[#0B0F14]/10 rounded-xl p-5 sm:p-6 shadow-xs card-pop reveal-pop">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
               <div>
                 <span className="px-2.5 py-0.5 rounded-full bg-[#B6F7D2]/60 text-[#087F5B] text-[10px] font-bold uppercase tracking-wider">
@@ -2539,19 +2549,19 @@ export default function MoiAppPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-[#0B0F14]/75">
-              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 space-y-1.5">
+              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 space-y-1.5 card-pop reveal-pop reveal-delay-100">
                 <p className="font-bold text-xs text-[#0B0F14]">Signer Memory Boundary</p>
                 <p className="text-[11px] leading-relaxed text-[#0B0F14]/70">
                   User owner keys never enter autonomous agent processes. The agent signer operates in an isolated environment with cryptographic calldata inspection prior to signing.
                 </p>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 space-y-1.5">
+              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 space-y-1.5 card-pop reveal-pop reveal-delay-200">
                 <p className="font-bold text-xs text-[#0B0F14]">Onchain Identity</p>
                 <p className="text-[11px] leading-relaxed text-[#0B0F14]/70">
                   Every autonomous agent operates with an authentic onchain identity registered on the Celo network with verifiable credentials.
                 </p>
               </div>
-              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 space-y-1.5">
+              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 space-y-1.5 card-pop reveal-pop reveal-delay-300">
                 <p className="font-bold text-xs text-[#0B0F14]">Balanced Double-Entry Ledger</p>
                 <p className="text-[11px] leading-relaxed text-[#0B0F14]/70">
                   Every settlement updates asset and expense accounts symmetrically. The ledger enforces the invariant that total debits match total credits down to exact atomic units.
@@ -3304,7 +3314,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Total Balance Card + Sparkline + 4 Action Pills (Matching Uploaded UI) */}
-            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs card-pop reveal-pop">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
                 <div className="lg:col-span-6 space-y-1.5">
                   <div className="flex items-center gap-2">
@@ -3365,7 +3375,7 @@ export default function MoiAppPage() {
                   {(treasuryData?.executions || []).filter(
                     (e: any) => e.state === 'CONFIRMED' || e.state === 'RECONCILED'
                   ).length > 0 ? (
-                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/8">
+                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/8 card-pop reveal-pop-subtle">
                       <p className="text-[11px] font-bold text-[#0B0F14]">Settled Volume</p>
                       <p className="text-xl font-black font-mono-num text-[#087F5B]">
                         {(treasuryData?.analytics?.filledBuyVolumeUsdtAtomic
@@ -3378,7 +3388,7 @@ export default function MoiAppPage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 flex items-center gap-2.5">
+                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/6 flex items-center gap-2.5 card-pop reveal-pop-subtle">
                       <div className="w-8 h-8 rounded-lg bg-[#B6F7D2]/50 text-[#087F5B] flex items-center justify-center shrink-0">
                         <Activity className="w-4 h-4" />
                       </div>
@@ -3403,14 +3413,14 @@ export default function MoiAppPage() {
                     setSendSuccess(null);
                     setShowSendModal(true);
                   }}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer hover-pop btn-pop"
                 >
                   <Send className="w-3.5 h-3.5 text-[#087F5B]" />
                   <span>Send</span>
                 </button>
                 <button
                   onClick={() => setShowReceiveModal(true)}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer hover-pop btn-pop"
                 >
                   <Download className="w-3.5 h-3.5 text-[#087F5B]" />
                   <span>Receive</span>
@@ -3427,14 +3437,14 @@ export default function MoiAppPage() {
                 </div>
                 <button
                   onClick={() => setActiveTab('treasury')}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer hover-pop btn-pop"
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5 text-[#087F5B]" />
                   <span>Swap</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('buy')}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer hover-pop btn-pop"
                 >
                   <CreditCard className="w-3.5 h-3.5 text-[#087F5B]" />
                   <span>Buy</span>
@@ -3443,7 +3453,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Target Portfolio Allocation & Auto-Rebalance Guard */}
-            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs space-y-3">
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs space-y-3 card-pop reveal-pop reveal-delay-100">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-[#B6F7D2]/60 text-[#087F5B] flex items-center justify-center">
@@ -3496,7 +3506,7 @@ export default function MoiAppPage() {
 
               {/* Drift Alert & 1-Click Rebalance */}
               {rebalanceSuggestedAction && (
-                <div className="p-3 rounded-xl bg-[#F0FDF4] border border-[#00E676]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="p-3 rounded-xl bg-[#F0FDF4] border border-[#00E676]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 card-pop reveal-pop">
                   <div className="space-y-0.5">
                     <p className="text-xs font-bold text-[#0B0F14] flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-[#087F5B]" />
@@ -3518,7 +3528,7 @@ export default function MoiAppPage() {
                       }
                       setActiveTab('treasury');
                     }}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#00E676] hover:bg-[#00c968] text-[#0B0F14] text-xs font-bold transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#00E676] hover:bg-[#00c968] text-[#0B0F14] text-xs font-bold transition shrink-0 flex items-center gap-1 shadow-xs cursor-pointer hover-pop btn-pop"
                   >
                     <span>1-Click Rebalance</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -3528,7 +3538,7 @@ export default function MoiAppPage() {
             </div>
 
             {/* Verified Celo Mainnet Asset Balances Strip */}
-            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs">
+            <div className="bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs card-pop reveal-pop reveal-delay-200">
               <div className="flex items-center justify-between mb-3.5">
                 <div>
                   <h3 className="text-xs sm:text-sm font-bold text-[#0B0F14]">
@@ -3557,12 +3567,22 @@ export default function MoiAppPage() {
                     const bIndex = coreOrder.indexOf(b.symbol);
                     return (aIndex === -1 ? 99 : aIndex) - (bIndex === -1 ? 99 : bIndex);
                   });
-                  return sorted.slice(0, 7).map((b: any) => {
+                  return sorted.slice(0, 7).map((b: any, bIdx: number) => {
                     const hasBal = BigInt(b.balanceAtomic || '0') > 0n;
                     return (
                       <div
                         key={b.symbol}
-                        className={`rounded-xl p-2.5 sm:p-3 border transition ${
+                        className={`rounded-xl p-2.5 sm:p-3 border transition card-pop reveal-pop-subtle ${
+                          bIdx === 0
+                            ? 'reveal-delay-50'
+                            : bIdx === 1
+                            ? 'reveal-delay-100'
+                            : bIdx === 2
+                            ? 'reveal-delay-150'
+                            : bIdx === 3
+                            ? 'reveal-delay-200'
+                            : 'reveal-delay-250'
+                        } ${
                           hasBal
                             ? 'bg-[#B6F7D2]/20 border-[#00E676]/40 shadow-xs'
                             : 'bg-[#F8FAFC] border-[#0B0F14]/8'

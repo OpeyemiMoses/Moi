@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Web3Provider } from '@/components/Web3Provider';
+import { ScrollRevealProvider } from '@/components/ScrollRevealProvider';
 
 export const metadata: Metadata = {
   title: 'MOI — Your AI Agent. Your Treasury. | Autonomous Treasury OS on Celo',
@@ -20,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-[#F8FAFC] text-[#0B0F14] antialiased">
         <Web3Provider>
-          {children}
+          <ScrollRevealProvider>
+            {children}
+          </ScrollRevealProvider>
         </Web3Provider>
       </body>
     </html>

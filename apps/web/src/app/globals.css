@@ -122,3 +122,152 @@ body {
     opacity: 0.2;
   }
 }
+
+/* ============================================================================
+   REVEAL ON SCROLL & POP ANIMATION SYSTEM (ALL PAGES & ELEMENTS)
+   ============================================================================ */
+
+/* 1. Base Reveal on Scroll (Smooth Fade & Slide Up) */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 2. Reveal Pop (Bouncy Dynamic Pop-in on Scroll / Load) */
+.reveal-pop {
+  opacity: 0;
+  transform: scale(0.90) translateY(18px);
+  transition: opacity 0.65s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-pop.is-revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* 3. Subtle Reveal Pop (For tighter cards, badges, and table rows) */
+.reveal-pop-subtle {
+  opacity: 0;
+  transform: scale(0.96) translateY(10px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-pop-subtle.is-revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* 4. Slide In from Left / Right */
+.reveal-slide-left {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-slide-left.is-revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-slide-right {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-slide-right.is-revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 5. Stagger Delay Sequence Utilities */
+.reveal-delay-50 { transition-delay: 50ms !important; }
+.reveal-delay-100 { transition-delay: 100ms !important; }
+.reveal-delay-150 { transition-delay: 150ms !important; }
+.reveal-delay-200 { transition-delay: 200ms !important; }
+.reveal-delay-250 { transition-delay: 250ms !important; }
+.reveal-delay-300 { transition-delay: 300ms !important; }
+.reveal-delay-350 { transition-delay: 350ms !important; }
+.reveal-delay-400 { transition-delay: 400ms !important; }
+.reveal-delay-500 { transition-delay: 500ms !important; }
+.reveal-delay-600 { transition-delay: 600ms !important; }
+.reveal-delay-700 { transition-delay: 700ms !important; }
+
+/* 6. Interactive Pop Hover & Active Micro-interactions */
+.hover-pop {
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+}
+
+.hover-pop:hover {
+  transform: translateY(-2.5px) scale(1.02);
+}
+
+.hover-pop:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+.card-pop {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.2s ease;
+}
+
+.card-pop:hover {
+  transform: translateY(-3.5px) scale(1.008);
+  box-shadow: 0 16px 32px -10px rgba(0, 230, 118, 0.14), 0 8px 16px -4px rgba(11, 15, 20, 0.05);
+}
+
+.btn-pop {
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+}
+
+.btn-pop:hover {
+  transform: scale(1.03);
+}
+
+.btn-pop:active {
+  transform: scale(0.97);
+}
+
+/* 7. Keyframes for Direct Pop Animations */
+@keyframes moiDirectPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.88) translateY(14px);
+  }
+  65% {
+    transform: scale(1.025) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-pop-in {
+  animation: moiDirectPopIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes moiDirectFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: moiDirectFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

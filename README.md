@@ -1,94 +1,107 @@
 # MOI — Autonomous Treasury Operating System
 
-MOI is an institutional, non-custodial treasury operating system and financial automation platform built on Celo Mainnet (`chainId: 42220`). Engineered specifically for enterprises, digital merchants, and fintech operators in high-inflation emerging markets across Africa and Latin America, MOI protects capital against rapid currency depreciation, automates institutional foreign exchange swaps, settles domestic bank transfers directly through local central clearing rails, and issues cryptographic zero-gas payment requests.
+MOI is an institutional, non-custodial treasury operating system and financial automation platform built natively on Celo Mainnet (`chainId: 42220`). Engineered specifically for enterprises, digital merchants, and fintech operators in high-inflation emerging markets across Africa and Latin America, MOI protects capital against rapid currency depreciation, automates institutional foreign exchange swaps, settles domestic bank transfers directly through local central clearing rails, and issues cryptographic zero-gas payment requests.
 
 ---
 
-## Evaluation Guide for Judges
+## Note for Judges on How to Test (Live on Celo Mainnet)
 
-This walkthrough details how to verify MOI's onchain operations, deterministic security controls, and multi-currency rails on Celo Mainnet.
+Welcome Judges of the **Agents on Open Rails Hackathon** (November 2026). MOI is fully deployed, connected, and operating live on Celo Mainnet. You can evaluate MOI through the live production deployments or locally in under two minutes.
 
-### Quickstart
+### Live Production Deployments
 
-1. **Clone & Install**:
-   ```bash
-   git clone https://github.com/OpeyemiMoses/Moi.git
-   cd Moi
-   npm install
-   ```
-
-2. **Environment Configuration**:
-   ```bash
-   cp .env.example .env
-   ```
-   *The default configuration connects directly to Celo Mainnet (`chainId: 42220`) via the public RPC (`https://forno.celo.org`). No external API keys are required for evaluation.*
-
-3. **Launch Dashboard**:
-   ```bash
-   npm run dev
-   ```
-   Access the web interface at `http://localhost:3000`.
+* **Live Web Application (Vercel)**: [https://moi-theta-three.vercel.app](https://moi-theta-three.vercel.app)
+* **Production Alias**: [https://moi-yemigraffixs-projects.vercel.app](https://moi-yemigraffixs-projects.vercel.app)
+* **Live Backend & Database (Railway)**: [https://web-production-858b2.up.railway.app](https://web-production-858b2.up.railway.app)
+* **Live ERC-8004 Agent Identity Endpoint**: [https://moi-theta-three.vercel.app/api/identity/agent.json](https://moi-theta-three.vercel.app/api/identity/agent.json)
 
 ---
 
-### Step-by-Step Feature Walkthrough
+### Verified Onchain Identifiers & Live Test Wallet
 
-#### 1. Authentication & Onchain Asset Synchronization
-* Navigate to `http://localhost:3000` and click **Connect Wallet** in the top navigation bar.
-* Connect any standard Celo wallet (MetaMask, Rabby, Valora, or MiniPay) switched to **Celo Mainnet (Chain ID 42220)**.
-* Sign the Sign-In with Ethereum (SIWE, EIP-4361) challenge to establish a cryptographically verified multi-tenant session.
-* Your live balances for **CELO**, **USD₮**, **cUSD**, **cNGN**, **wBRL**, **wARS**, **wCOP**, and **wMXN** synchronize in real time directly from Celo Mainnet smart contracts.
+* **Official Hackathon Test Wallet**: `0x78b7b043921EE70806c66905E31fc2D9E75455a6`  
+  *(Funded with real CELO, USD₮, and cNGN on Celo Mainnet. Connect this wallet to immediately test live portfolio telemetry, rebalancing, and swaps).*
+* **Celo Transaction Attribution Tag**: `celo_c9cb9a59fc4c`  
+  *(Schema 0 trailer `63656c6f5f633963623961353966633463110080218021802180218021802180218021` appended to all calldata).*
+* **ERC-8004 Agent ID**: **#164** on Celo Mainnet Canonical Identity Registry (`0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`).
+* **Active Verified FX Corridors**: `CELO ↔ USD₮`, `cNGN ↔ USD₮`, `wARS ↔ USD₮`, `wBRL ↔ USD₮`, `wCOP ↔ USD₮`, `wMXN ↔ USD₮`.
 
-#### 2. Target Portfolio Allocation & Dynamic Rebalance Guard
-* On the main **Dashboard**, locate the **Target Portfolio Allocation & Rebalance Guard**.
-* Adjust the target allocation slider to set a preferred ratio (for example, `75% USD₮ / 25% Local Currency`).
-* MOI monitors real-time balance deviation against live market rates. When portfolio drift exceeds the configured tolerance threshold, the system displays an automated rebalancing recommendation that populates the swap terminal with a single click.
+---
 
-#### 3. Instant Currency Swaps (Textile FX v2)
-* Navigate to the **Treasury & FX** tab.
-* Select an emerging market trading pair (e.g., `cNGN → USD₮`, `wARS → USD₮`, or `wBRL → USD₮`).
-* Observe institutional RFQ pricing, zero price slippage guarantees, and live P2P rate comparisons.
-* The swap execution pipeline enforces the 17-point deterministic risk policy before any transaction is signed or broadcast.
+### Step-by-Step Evaluation Walkthrough
 
-#### 4. Multi-Corridor Domestic Bank Withdrawals
-* Click **Withdraw to Bank** from the dashboard quick actions.
-* Choose a destination clearing corridor:
-  * **Nigeria**: Instant settlement via NIBSS Instant Payment (NIP) to major commercial banks and digital institutions (GTBank, Zenith, Access, Kuda, PalmPay, OPay).
-  * **Brazil**: Instant settlement via Central Bank PIX.
-  * **Argentina**: Bank clearing via COELSA CBU / CVU or Alias.
-  * **Colombia & Mexico**: Local settlement via PSE / Nequi or SPEI CLABE.
-  * **Global**: International USD₮ clearing.
-* Enter the withdrawal amount and recipient account details, then confirm the transfer.
-* The transaction generates an immutable settlement reference code (e.g., `REF-NIP-...`) and commits the entry to the activity ledger.
+#### 1. Live Wallet Connection & Real-Time Sync
+1. Open [https://moi-theta-three.vercel.app](https://moi-theta-three.vercel.app) (or `http://localhost:3000`).
+2. Click **Connect Wallet** in the top navigation bar.
+3. Connect with any standard Celo wallet (MetaMask, Rabby, Valora, or MiniPay) switched to **Celo Mainnet (Chain ID 42220)**.
+4. Sign the Sign-In with Ethereum (SIWE, EIP-4361) challenge to establish an isolated multi-tenant session.
+5. Observe live onchain balances for **CELO**, **USD₮**, **cNGN**, **wBRL**, **wARS**, and **wCOP** synchronizing in real time directly from Celo smart contracts.
 
-#### 5. Zero-Gas Invoicing & Payment Requests
-* Click **Invoices & Pay** in the sidebar navigation to open the dedicated invoicing terminal (`/invoices`).
-* Click **Create New Invoice**, enter the client name, reference identifier, payment amount, and select the settlement token.
-* Click **Sign & Issue Invoice with Wallet ($0 Gas)**.
-* Your wallet prompts you to sign an **EIP-712 structured data message**. This cryptographic signature costs **$0.00 and consumes zero network gas**.
-* The invoice is immediately registered in your cryptographic history with verified EIP-712 proof.
-* Click **View QR** to inspect the invoice slip, dynamic payment QR code, and standard `celo:` payment URI.
+#### 2. Target Portfolio Allocation & Dynamic Rebalancing
+1. On the **Dashboard**, locate the **Target Portfolio Allocation & Rebalance Guard**.
+2. Slide the allocation controller to set a target reserve ratio (e.g., `80% USD₮ / 20% Local Currency`).
+3. Notice how MOI computes portfolio drift against live market rates in real time.
+4. When drift exceeds tolerance, click **1-Click Rebalance** to automatically prefill the institutional swap terminal with the exact calculated delta.
 
-#### 6. Autonomous Treasury Mandates & Dual-Key Agent Execution
-* Navigate to the **Agents** tab.
-* Inspect active autonomous mandates or click **Create Mandate & Issue Agent**.
-* Define operational parameters: trade execution caps, minimum local currency reserve limits, and maximum allowed slippage.
-* Deployed agents execute deterministic rebalancing within these constraints under dual-key isolation.
+#### 3. Live Currency Swaps with Calldata Attribution
+1. Navigate to the **Treasury & FX** tab.
+2. Select any emerging market trading pair (e.g., `CELO → USD₮`, `USD₮ → cNGN`, or `cNGN → USD₮`).
+3. Enter an amount and inspect the live firm RFQ quote with guaranteed zero slippage.
+4. Click **Execute Swap**.
+5. When your wallet prompts the transaction, verify that:
+   * The destination is the verified router or reactor on Celo.
+   * Calldata includes the Schema 0 attribution trailer (`celo_c9cb9a59fc4c`).
+   * The transaction confirms on CeloScan and balances update instantly in your dashboard.
+
+#### 4. Cryptographic $0-Gas Invoicing & QR Code Checkout
+1. Navigate to the **Invoices & Pay** tab.
+2. Click **Create New Invoice**, enter client name (e.g., `Acme Corp`), amount (e.g., `10`), and select currency (`USD₮` or `cNGN`).
+3. Click **Sign & Issue Invoice with Wallet ($0 Gas)**.
+4. Sign the EIP-712 structured data message in your wallet (**costs $0.00 in gas**).
+5. Click **View QR / Pay Page** or share the link.
+6. The public checkout page (`/invoice/[id]`) displays:
+   * Formatted invoice details, recipient address, and amount due.
+   * Dynamic QR code pointing directly to the invoice payment URL.
+   * A one-click **Pay Invoice Now** trigger that directly invokes the onchain transfer with attribution tag.
+   * Instant status change to **PAID & SETTLED** with verified transaction hash upon onchain confirmation.
+
+#### 5. Verify the Automated Test Suite (212/212 Passing Tests)
+Run the automated test suite locally to verify all 28 test suites covering financial invariants, adversarial security, SIWE authentication, and live integrations:
+```bash
+git clone https://github.com/OpeyemiMoses/Moi.git
+cd Moi
+npm install
+npm test
+```
+*Expected Result: 28 test files passed, 212 tests passed (100% success).*
+
+---
+
+## Visual Platform Overview
+
+### Autonomous Treasury Dashboard
+![MOI Autonomous Treasury Dashboard](docs/images/moi-dashboard-preview.jpg)
+
+### Zero-Gas Cryptographic Invoicing & Dynamic QR Code Payment
+![MOI Cryptographic Invoicing & Dynamic QR Payment](docs/images/moi-invoicing-preview.jpg)
+
+### Instant Onchain Settlement & Double-Entry Ledger Reconciliation
+![MOI Payment Confirmation & Ledger Settlement](docs/images/moi-payment-settlement.jpg)
 
 ---
 
 ## The Problem: The Emerging Market Treasury Dilemma
 
-Corporate treasuries, online merchants, and remote contractors in emerging markets face compounding structural risks:
+Corporate treasuries, digital merchants, and remote enterprises operating across Africa and Latin America face compounding structural risks:
 
-1. **Severe Currency Depreciation**: Currencies such as the Nigerian Naira (NGN), Argentine Peso (ARS), and Brazilian Real (BRL) experience persistent devaluation against the US Dollar. Unhedged cash balances erode working capital monthly.
-2. **P2P Counterparty & Escrow Scams**: Without institutional access, operators rely on informal peer-to-peer (P2P) crypto desks. This exposes businesses to fraudulent bank reversals, frozen accounts, and predatory 4–8% spreads.
+1. **Severe Currency Depreciation**: Sovereign currencies such as the Nigerian Naira (NGN), Argentine Peso (ARS), and Brazilian Real (BRL) suffer persistent inflation and devaluation. Unhedged cash balances erode operational capital monthly.
+2. **P2P Counterparty & Escrow Scams**: Lacking access to institutional foreign exchange, businesses turn to informal peer-to-peer (P2P) crypto desks, exposing their bank accounts to fraudulent reversals, account freezes, and predatory 4–8% spreads.
 3. **Execution Bottlenecks**: Treasury teams cannot monitor exchange rates around the clock. Manual conversions introduce delays, human error, and execution slippage during high-volatility events.
-4. **Unsafe Autonomous Systems**: Traditional AI trading bots operate as black boxes with unconstrained private key access. A single hallucinated model output or API glitch can liquidate an entire corporate treasury.
+4. **Unsafe Autonomous Systems**: Traditional trading bots operate as black boxes with unconstrained private key access. A single hallucinated model output or API glitch can liquidate an entire corporate treasury.
 
 ---
 
-## Core Architecture & Product Pillars
+## The Solution: The 6 Architectural Pillars of MOI
 
 MOI solves these challenges by combining non-custodial asset custody, guaranteed RFQ execution, direct domestic banking rails, and deterministic risk policy enforcement:
 
@@ -125,9 +138,9 @@ MOI solves these challenges by combining non-custodial asset custody, guaranteed
 * **Passive Maker (`textile-stitch`)**: Serves an Avellaneda-Stoikov inventory-skewed pricing feed (`/api/pricing/stitch`), enabling treasuries to earn maker spread while rebalancing excess local currency reserves.
 * **Protocol Fee Enforcement**: Guaranteed maximum fee compliance bounded to 1 bps routing through the Textile Fee Controller (`0x7b005466F905DD882A959888154587fA76cd3Ea7`).
 
-### 3. Direct Domestic Bank Off-Ramps
+### 3. Direct Domestic Bank Rails (Multi-Corridor Off-Ramps)
 MOI bridges onchain stable assets directly into sovereign fiat clearing systems without intermediary P2P exchange risk:
-* **Nigeria**: Direct integration with NIBSS Instant Payment (NIP) for instant credit to Nigerian bank accounts and mobile money operators.
+* **Nigeria**: Direct integration pathway for NIBSS Instant Payment (NIP) settling to major banks (GTBank, Access, Zenith, Kuda, PalmPay, OPay).
 * **Brazil**: Instant Brazilian Real settlements via Central Bank PIX.
 * **Argentina**: Direct clearing to Argentine bank and virtual accounts via COELSA CBU, CVU, and Alias.
 * **Colombia & Mexico**: Automated transfers via Colombia PSE / Nequi and Mexico SPEI CLABE.
@@ -210,7 +223,7 @@ All operations settle through audited, verified smart contracts on **Celo Mainne
 ```
 moi/
 ├── apps/
-│   └── web/                   # Next.js 15 application, dashboard UI, and API routes
+│   └── web/                   # Next.js 15 front-end, dashboard UI, and API routes
 ├── packages/
 │   ├── agent-core/            # Autonomous agent loop, lifecycle, and task dispatcher
 │   ├── buy-client/            # buy and x402 HTTP microservice settlement client
@@ -222,13 +235,15 @@ moi/
 │   ├── textile-adapter/       # Textile FX v2 RFQ client and Stitch liquidity feed
 │   └── wallet-signer/         # Dual-key service and ERC-8021 calldata attribution
 ├── docs/                      # Architectural specifications and evaluation documents
+│   └── images/                # Product UI screenshots and diagrams (no stickers)
 ├── prisma/                    # Relational database schema
 ├── .env.example               # Preconfigured Celo Mainnet environment template
 ├── .gitignore                 # Production git ignore configuration
 ├── LICENSE                    # MIT Open Source License
 ├── CONTRIBUTING.md            # Guidelines for open source contributors
 ├── CODE_OF_CONDUCT.md        # Contributor Covenant Code of Conduct
-└── SECURITY.md                # Security policy and disclosure process
+├── SECURITY.md                # Security policy and disclosure process
+└── .github/                   # Bug report, feature request & pull request templates
 ```
 
 ---
@@ -238,59 +253,70 @@ moi/
 | Endpoint | Method | Authentication | Description |
 | -------- | :----: | :------------: | ----------- |
 | `/api/health` | `GET` | Public | System status, database health, and process uptime |
-| `/api/health/live` | `GET` | Public | Kubernetes liveness probe |
-| `/api/health/ready` | `GET` | Public | Kubernetes readiness probe |
-| `/api/identity/agent.json` | `GET` | Public | ERC-8004 machine-readable agent registration |
+| `/api/health/live` | `GET` | Public | Kubernetes / container liveness probe |
+| `/api/health/ready` | `GET` | Public | Kubernetes / container readiness probe |
+| `/api/identity/agent.json` | `GET` | Public | ERC-8004 machine-readable agent registration document |
 | `/api/pricing/stitch` | `GET` | Public | Textile Stitch Avellaneda-Stoikov pricing feed |
 | `/api/auth/nonce` | `GET` | Public | Single-use SIWE challenge nonce generation |
 | `/api/auth/verify` | `POST` | Public | Cryptographic SIWE signature verification |
 | `/api/auth/session` | `GET` | Session | Current authenticated session details |
 | `/api/auth/logout` | `POST` | Session | Revoke session credentials |
-| `/api/treasury` | `GET` | Session | Live portfolio balances, metrics, and mandates |
+| `/api/treasury` | `GET` | Session | Live portfolio balances, metrics, and active mandates |
 | `/api/treasury` | `POST` | Session | Update treasury settings and target allocations |
 | `/api/treasury/controls` | `GET` | Session | Approval queue, audit logs, and policy events |
 | `/api/treasury/controls` | `POST` | Session | Execute approval actions, pause/resume mandates |
-| `/api/fx/quote` | `POST` | Session | Request Textile RFQ quote and run 17 policy checks |
+| `/api/fx/quote` | `POST` | Session | Request Textile RFQ quote and evaluate 17 policy checks |
+| `/api/invoices/[id]` | `GET` | Public | Fetch invoice details for checkout page |
+| `/api/invoices/[id]` | `POST` | Public / Signer | Execute payment reconciliation and update invoice status |
 | `/api/buy` | `GET` | Session | Catalog of x402-enabled intelligence microservices |
 | `/api/buy` | `POST` | Session | Execute autonomous x402 payment and service call |
 
 ---
 
-## Production Runbook & Verification
+## Local Development Quickstart
 
-### Automated Test Suite
-Run the test suite across all packages:
-```bash
-npm test
-```
+1. **Clone & Install Dependencies**:
+   ```bash
+   git clone https://github.com/OpeyemiMoses/Moi.git
+   cd Moi
+   npm install
+   ```
 
-### Type Checking & Build Verification
-Verify TypeScript compilation and Next.js production build:
-```bash
-npm run typecheck
-npm run build
-```
+2. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   ```
+   *The default configuration connects directly to Celo Mainnet (`chainId: 42220`) via the public RPC (`https://forno.celo.org`). No external API keys are required for evaluation.*
 
-### Docker Deployment
-Build and run the production container:
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
+3. **Launch Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` to interact with the dashboard.
 
----
-
-## Security & Non-Custodial Assurances
-
-1. **Non-Custodial Design**: MOI never takes custody of treasury funds. All trades and transfers execute through verified smart contracts via Permit2 allowances.
-2. **Deterministic Engine Over AI Outputs**: Large language models are strictly restricted to advisory drafting and natural language mandate compilation. All financial authorizations are evaluated by deterministic code.
-3. **Dual-Key Isolation**: The operational agent key cannot modify policy boundaries, cannot redirect withdrawal recipients, and cannot exceed allocated trading volumes.
-4. **Tenant Isolation**: Portfolios, activity ledgers, and invoice records are strictly partitioned by authenticated wallet address.
+4. **Run Comprehensive Test Suite**:
+   ```bash
+   npm test
+   ```
 
 ---
 
-## Contributing
+## Dual Production Deployment Details
 
-Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for contribution guidelines.
+| Environment | Platform | URL | Purpose |
+| ----------- | -------- | --- | ------- |
+| **Frontend & API Routes** | Vercel | [https://moi-theta-three.vercel.app](https://moi-theta-three.vercel.app) | Global Edge CDN, sub-second TTFB, Next.js Serverless API execution |
+| **Worker & Storage** | Railway | [https://web-production-858b2.up.railway.app](https://web-production-858b2.up.railway.app) | Persistent execution worker, PostgreSQL database, continuous job runner |
+
+---
+
+## Open Source Governance & Community
+
+* **Code of Conduct**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) defines community standards based on Contributor Covenant v2.1.
+* **Contributing Guidelines**: [CONTRIBUTING.md](CONTRIBUTING.md) details monorepo architecture, PR workflows, and coding standards.
+* **Security Policy**: [SECURITY.md](SECURITY.md) outlines our vulnerability disclosure process and security architecture.
+* **Issue Templates**: Bug report and feature request templates are located in [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/).
+* **Pull Request Template**: Standard PR verification checklist located in [`.github/pull_request_template.md`](.github/pull_request_template.md).
 
 ---
 

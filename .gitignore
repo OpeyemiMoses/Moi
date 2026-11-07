@@ -78,3 +78,5 @@ data/moi-store.test.json
 data/moi-store.json.tmp
 data/*.json
 !data/.gitkeep
+.vercel
+.env*
