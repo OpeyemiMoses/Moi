@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-07T14:01:14.856Z",
+  "generatedAt": "2026-11-07T14:16:24.484Z",
   "network": "Celo Mainnet (Chain ID 42220)",
   "attributionTag": "celo_c9cb9a59fc4c",
   "erc8004Identity": {
@@ -12,23 +12,23 @@
   "trackProofs": {
     "track2_openCorridors": {
       "test": "Mainnet Transaction with ERC-8021 Calldata Attribution",
-      "txHash": "0xc07c42fe81f8f2428834fe40748546d33f03c9b6bc3f472db08cc3913f3bce98",
-      "celoscanUrl": "https://celoscan.io/tx/0xc07c42fe81f8f2428834fe40748546d33f03c9b6bc3f472db08cc3913f3bce98",
+      "txHash": "0x20d7d7d9e84ed2fd7137a3a21fbb5fcfe86fb8982d42978eb3e22a1d5f8286ae",
+      "celoscanUrl": "https://celoscan.io/tx/0x20d7d7d9e84ed2fd7137a3a21fbb5fcfe86fb8982d42978eb3e22a1d5f8286ae",
       "attributionTag": "celo_c9cb9a59fc4c",
       "status": "SUCCESS",
-      "blockNumber": 82159319,
+      "blockNumber": 82160229,
       "gasUsed": "22370",
       "calldataSuffix": "0x63656c6f5f633963623961353966633463110080218021802180218021802180218021"
     },
     "track1_latAmRipio": {
       "test": "Zero-Gas EIP-712 Invoice Issuance (Ripio wARS Corridor)",
-      "invoiceNumber": "INV-CELO-078537",
+      "invoiceNumber": "INV-CELO-988739",
       "corridor": "wARS (Argentine Peso)",
       "amount": "150000.00",
       "client": "Buenos Aires Logistics S.A.",
       "creatorWallet": "0x78b7b043921EE70806c66905E31fc2D9E75455a6",
       "signatureScheme": "EIP-712",
-      "signature": "0xf6f14cc9b3533a951b20dea71204e2bf8e9f109b21b06212d7eb5b6896728938089d875a7e5c3290b454492114ee0935d8aaab3e74af7e85e9ea6f43d4c5a8ce1c",
+      "signature": "0x9d7aeaba5f962dd23fc2caad5ea28b7b1a4dcd6ffc3d941874bf6030d0e4670e1446d7e86d23a50aa616059c27978ab4a59e05b9aafd174285a9fc888e69063d1c",
       "gasCost": "$0.00"
     },
     "track2_stitchMaker": {
@@ -147,7 +147,7 @@
         "settledInBlock": 82158601,
         "settlementAsset": "USA₮",
         "payer": "0x78b7b043921EE70806c66905E31fc2D9E75455a6",
-        "signature": "0x91c485371146634e5ad8ef7e8663ce41f096abef11d1922c70656469440bc2ca79d1061287a4009b17700fc876b0ca3707ae9de095a3e21df57a12fc2adbdeaef6"
+        "signature": "0xb87241e761eebd295eef26029525aee37c565808c39e325734182e7e3aac3b3a05df9765f49fcbd7deaef2a4a81501128bc48c1d1d9afd2bdfe85b707f1fcd700d"
       }
     }
   }
