@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-11-07T14:01:14.856Z",
+  "network": "Celo Mainnet (Chain ID 42220)",
+  "attributionTag": "celo_c9cb9a59fc4c",
+  "erc8004Identity": {
+    "registryContract": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "tokenId": "10048",
+    "registrationTxHash": "0x2919af6672409932a2e86ce669401c3c12fa4d2029a16e53a8a5a146b258324f",
+    "celoscanUrl": "https://celoscan.io/tx/0x2919af6672409932a2e86ce669401c3c12fa4d2029a16e53a8a5a146b258324f",
+    "status": "MINTED_AND_CONFIRMED"
+  },
+  "trackProofs": {
+    "track2_openCorridors": {
+      "test": "Mainnet Transaction with ERC-8021 Calldata Attribution",
+      "txHash": "0xc07c42fe81f8f2428834fe40748546d33f03c9b6bc3f472db08cc3913f3bce98",
+      "celoscanUrl": "https://celoscan.io/tx/0xc07c42fe81f8f2428834fe40748546d33f03c9b6bc3f472db08cc3913f3bce98",
+      "attributionTag": "celo_c9cb9a59fc4c",
+      "status": "SUCCESS",
+      "blockNumber": 82159319,
+      "gasUsed": "22370",
+      "calldataSuffix": "0x63656c6f5f633963623961353966633463110080218021802180218021802180218021"
+    },
+    "track1_latAmRipio": {
+      "test": "Zero-Gas EIP-712 Invoice Issuance (Ripio wARS Corridor)",
+      "invoiceNumber": "INV-CELO-078537",
+      "corridor": "wARS (Argentine Peso)",
+      "amount": "150000.00",
+      "client": "Buenos Aires Logistics S.A.",
+      "creatorWallet": "0x78b7b043921EE70806c66905E31fc2D9E75455a6",
+      "signatureScheme": "EIP-712",
+      "signature": "0xf6f14cc9b3533a951b20dea71204e2bf8e9f109b21b06212d7eb5b6896728938089d875a7e5c3290b454492114ee0935d8aaab3e74af7e85e9ea6f43d4c5a8ce1c",
+      "gasCost": "$0.00"
+    },
+    "track2_stitchMaker": {
+      "test": "Avellaneda-Stoikov Market Making & 17-Rule Policy Engine",
+      "policyAuthorized": true,
+      "ruleChecksPassed": 18,
+      "totalRuleChecks": 18,
+      "checks": [
+        {
+          "ruleId": "MANDATE_NOT_PAUSED",
+          "ruleName": "Treasury & Mandate Active (Not Paused)",
+          "passed": true
+        },
+        {
+          "ruleId": "FIRST_TRADE_OWNER_AUTHORIZATION",
+          "ruleName": "First-Trade Mandatory Owner Authorization Gate",
+          "passed": true
+        },
+        {
+          "ruleId": "OPERATING_MODE",
+          "ruleName": "Operating Mode Permits Execution",
+          "passed": true
+        },
+        {
+          "ruleId": "NO_DUPLICATE_LOCK",
+          "ruleName": "No Concurrent Execution In Flight",
+          "passed": true
+        },
+        {
+          "ruleId": "SIGNER_HEALTHY",
+          "ruleName": "Restricted Signer Boundary Healthy",
+          "passed": true
+        },
+        {
+          "ruleId": "CHAIN_ID_CELO_MAINNET",
+          "ruleName": "Celo Mainnet Chain ID (42220)",
+          "passed": true
+        },
+        {
+          "ruleId": "FIRM_QUOTE_PRESENT",
+          "ruleName": "Executable Firm Quote Present",
+          "passed": true
+        },
+        {
+          "ruleId": "TAKER_WALLET_MATCH",
+          "ruleName": "Taker Matches Restricted Agent Wallet",
+          "passed": true
+        },
+        {
+          "ruleId": "QUOTE_NOT_EXPIRED",
+          "ruleName": "Quote Accept Window & Order Deadline Live",
+          "passed": true
+        },
+        {
+          "ruleId": "ALLOWLISTED_CORRIDOR",
+          "ruleName": "Verified Celo Token Corridor",
+          "passed": true
+        },
+        {
+          "ruleId": "APPROVED_REACTOR_TARGET",
+          "ruleName": "Approved Textile LimitOrderReactor Target",
+          "passed": true
+        },
+        {
+          "ruleId": "CALLDATA_AND_VALUE_GUARD",
+          "ruleName": "Zero Native Value & Valid Reactor Calldata",
+          "passed": true
+        },
+        {
+          "ruleId": "PER_TRADE_CAP",
+          "ruleName": "Within Per-Trade Spend Cap",
+          "passed": true
+        },
+        {
+          "ruleId": "DAILY_SELL_CAP",
+          "ruleName": "Within 24h Cumulative Conversion Cap",
+          "passed": true
+        },
+        {
+          "ruleId": "MINIMUM_RESERVE_PRESERVED",
+          "ruleName": "Preserves Minimum Operating Reserve",
+          "passed": true
+        },
+        {
+          "ruleId": "MIN_BUY_OUTPUT_THRESHOLD",
+          "ruleName": "Meets Minimum Acceptable Buy Output",
+          "passed": true
+        },
+        {
+          "ruleId": "PROTOCOL_FEE_BOUND",
+          "ruleName": "Protocol Fee Within Policy Ceiling",
+          "passed": true
+        },
+        {
+          "ruleId": "DAILY_LOSS_CIRCUIT_BREAKER",
+          "ruleName": "Daily Risk / Loss Limit Not Breached",
+          "passed": true
+        }
+      ],
+      "stitchQuotes": {
+        "bid": "0.000649",
+        "ask": "0.000652",
+        "inventorySkewBps": 5,
+        "strategyReasoning": "Adaptive Stitch Filler active on cNGN/USDT: inventory utilization=66.7%, applied inventory skew=+5 bps around mid 0.0006 (spread ±20 bps)."
+      }
+    },
+    "track3_usebuy": {
+      "serviceId": "srv_textile_volatility_oracle_v2",
+      "endpoint": "https://moi-treasury.vercel.app/api/buy/oracle",
+      "priceUsd": "0.005",
+      "paymentToken": "USAT",
+      "facilitator": "Celo x402 Native Facilitator (0xa9AA...35b3)",
+      "settlementReceipt": {
+        "status": "PAID",
+        "httpCode": 402,
+        "settledInBlock": 82158601,
+        "settlementAsset": "USA₮",
+        "payer": "0x78b7b043921EE70806c66905E31fc2D9E75455a6",
+        "signature": "0x91c485371146634e5ad8ef7e8663ce41f096abef11d1922c70656469440bc2ca79d1061287a4009b17700fc876b0ca3707ae9de095a3e21df57a12fc2adbdeaef6"
+      }
+    }
+  }
+}

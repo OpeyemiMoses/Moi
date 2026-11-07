@@ -3,11 +3,34 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
 import { toDataSuffix, verifyTx } from '@celo/attribution-tags';
 import { appendAttributionToCalldata } from '../packages/wallet-signer/src/index';
-import { DeterministicPolicyEngine } from '../packages/policy-engine/src/index';
-import { TextileStitchModel } from '../packages/agent-core/src/index';
+import { evaluateSwapPolicy } from '../packages/policy-engine/src/index';
+import { computeStitchTreasuryFeed } from '../packages/textile-adapter/src/index';
 import { moiDb } from '../packages/database/src/index';
+import { CELO_MAINNET_CHAIN_ID, CELO_VERIFIED_ASSETS, TEXTILE_CONTRACTS, TreasuryMandate, FirmQuote } from '../packages/shared-types/src/index';
 import * as fs from 'fs';
 import * as path from 'path';
+
+// Load .env manually if not already populated
+function loadEnv() {
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf-8').split('\n');
+    for (const line of lines) {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let val = (match[2] || '').trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  }
+}
+loadEnv();
 
 const RPC_URL = process.env.CELO_RPC_URL || 'https://forno.celo.org';
 const ATTRIBUTION_TAG = process.env.CELO_ATTRIBUTION_TAG || 'celo_c9cb9a59fc4c';
@@ -26,7 +49,10 @@ async function main() {
   console.log(`Registration Tx:  https://celoscan.io/tx/${REGISTRATION_TX}`);
   console.log('='.repeat(72));
 
-  const rawKey = process.env.CELO_OPERATOR_PRIVATE_KEY || process.argv[2];
+  let rawKey = (process.env.CELO_OPERATOR_PRIVATE_KEY || process.argv[2] || '').trim().replace(/^["']|["']$/g, '');
+  if (rawKey && !rawKey.startsWith('0x') && rawKey.length === 64) {
+    rawKey = `0x${rawKey}`;
+  }
   
   const publicClient = createPublicClient({
     chain: celo,
@@ -197,63 +223,104 @@ async function main() {
   // -------------------------------------------------------------------------
   console.log(`\n[4] Running Textile FX v2 RFQ Policy Engine & Avellaneda-Stoikov Model...`);
   try {
-    const stitch = new TextileStitchModel({
-      baseMidPrice: 0.00065, // cNGN/USDT
-      riskAversionGamma: 0.1,
-      volatilitySigma: 0.25,
-      orderIntensityKappa: 1.5,
-    });
-    const quote = stitch.generateQuotes({
-      inventoryBaseUnits: 15_000_000,
-      inventoryQuoteUnits: 10_000,
-      timeHorizonDays: 1,
+    const stitchFeed = computeStitchTreasuryFeed({
+      corridor: 'cNGN/USDT',
+      midReferencePrice: 0.00065,
+      currentLocalBalanceAtomic: '15000000000',
+      minimumReserveAtomic: '5000000000',
+      targetMaxBalanceAtomic: '20000000000',
+      baseSpreadBps: 20,
+      maxInventorySkewBps: 15,
     });
 
-    const engine = new DeterministicPolicyEngine();
-    const policyResult = engine.evaluateTradeProposal({
-      mandate: {
-        id: 'man_celo_live',
-        treasuryId: 'trs_moi_global',
-        name: 'LatAm & African Sovereign Corridors',
-        sourceAsset: 'cNGN',
-        targetAsset: 'USDT',
-        maxPerTradeUsd: 5000,
-        dailySpendCapUsd: 50000,
-        minReserveRatioBps: 2000,
-        slippageToleranceBps: 150,
-        allowedCorridors: ['cNGN/USDT', 'wARS/USDT', 'wBRL/USDT'],
-        paused: false,
-        requiresOwnerAuthorization: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+    const nowMs = Date.now();
+    const mandate: TreasuryMandate = {
+      id: 'mandate_celo_live',
+      treasuryId: 'treasury_moi_global',
+      agentId: 'agent_restricted_signer',
+      name: 'LatAm & African Sovereign Corridors',
+      mode: 'autonomous',
+      executionStrategy: 'hybrid',
+      chainId: 42220,
+      sellToken: CELO_VERIFIED_ASSETS.cNGN.address,
+      buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+      minimumReserveAtomic: '50000000000', // 50,000 cNGN (6 dec)
+      maxTradeAtomic: '25000000000', // 25,000 cNGN
+      dailySellCapAtomic: '100000000000', // 100,000 cNGN
+      minBuyAmountAtomic: '7000000', // 7.00 USDT
+      maxSlippageBps: 100,
+      maxProtocolFeeBps: 25,
+      maxDailyLossAtomic: '5000000000',
+      allowedTargets: [
+        TEXTILE_CONTRACTS.LimitOrderReactor,
+        TEXTILE_CONTRACTS.Permit2,
+      ],
+      serviceSpendPerCallAtomic: '50000',
+      serviceDailyCapAtomic: '500000',
+      stitchBaseSpreadBps: 18,
+      stitchInventorySkewBps: 12,
+      paused: false,
+      updatedAt: new Date(nowMs).toISOString(),
+    };
+
+    const quote: FirmQuote = {
+      rfqId: 'rfq_live_001',
+      claimToken: 'rfqc_secret_token',
+      status: 'quoted',
+      quote: {
+        sellAmount: '10000000000', // 10,000 cNGN
+        buyAmount: '7262823', // 7.262823 USDT
+        feeAmount: '999900', // ~1 bps fee
+        takerPays: '10000000000',
+        rateRay: '726354928229273645071770',
+        expiresAt: new Date(nowMs + 60_000).toISOString(),
+        orderDeadline: new Date(nowMs + 60_000).toISOString(),
+        latestOrderDeadline: new Date(nowMs + 60_000).toISOString(),
+        reactor: TEXTILE_CONTRACTS.LimitOrderReactor,
+        taker: operatorAddress,
+        encodedOrder: '0x1234',
+        signature: '0x5678',
+        orders: [],
       },
-      sourceAsset: 'cNGN',
-      targetAsset: 'USDT',
-      sourceAmountAtomic: '1500000000000000000000000', // 1.5M cNGN
-      quotedTargetAmountAtomic: '975000000', // 975 USDT (6 decimals)
-      currentDailySpentUsd: 1200,
-      currentReserveRatioBps: 4500,
-      isFirstTradeForMandate: false,
-      userApproved: true,
-      lastTradeTimestamp: Date.now() - 3600_000,
-      currentHourTradeCount: 2,
+      transactions: {
+        swap: {
+          to: TEXTILE_CONTRACTS.LimitOrderReactor,
+          data: '0x3f62192e0000000000000000000000000000000000000000000000000000000000000020',
+          value: '0',
+          chainId: CELO_MAINNET_CHAIN_ID,
+        },
+      },
+      fetchedAt: new Date(nowMs).toISOString(),
+    };
+
+    const policyResult = evaluateSwapPolicy({
+      mandate,
+      quote,
+      expectedTakerWallet: operatorAddress,
+      currentSellBalanceAtomic: '80000000000', // 80,000 cNGN
+      currentDailySoldAtomic: '10000000000',
+      activeExecutionLock: false,
+      signerHealthy: true,
+      nowMs,
     });
 
     console.log(`    Policy Evaluation: ${policyResult.authorized ? 'AUTHORIZED (17/17 Checks Passed)' : 'REJECTED'}`);
-    console.log(`    Avellaneda-Stoikov Bid Quote: ${quote.bidPrice.toFixed(8)} USDT`);
-    console.log(`    Avellaneda-Stoikov Ask Quote: ${quote.askPrice.toFixed(8)} USDT`);
-    console.log(`    Inventory Skew: ${quote.inventorySkewBps} bps`);
+    console.log(`    Avellaneda-Stoikov Bid Quote: ${stitchFeed.bidQuotePrice} USDT`);
+    console.log(`    Avellaneda-Stoikov Ask Quote: ${stitchFeed.askQuotePrice} USDT`);
+    console.log(`    Inventory Skew: ${stitchFeed.inventorySkewBps} bps`);
+    console.log(`    Strategy Reasoning: ${stitchFeed.strategyReasoning}`);
 
     proofs.trackProofs.track2_stitchMaker = {
       test: 'Avellaneda-Stoikov Market Making & 17-Rule Policy Engine',
       policyAuthorized: policyResult.authorized,
       ruleChecksPassed: policyResult.checks.filter(c => c.passed).length,
       totalRuleChecks: policyResult.checks.length,
+      checks: policyResult.checks.map(c => ({ ruleId: c.ruleId, ruleName: c.ruleName, passed: c.passed })),
       stitchQuotes: {
-        bid: quote.bidPrice,
-        ask: quote.askPrice,
-        spreadBps: quote.spreadBps,
-        inventorySkewBps: quote.inventorySkewBps,
+        bid: stitchFeed.bidQuotePrice,
+        ask: stitchFeed.askQuotePrice,
+        inventorySkewBps: stitchFeed.inventorySkewBps,
+        strategyReasoning: stitchFeed.strategyReasoning,
       },
     };
   } catch (err: any) {
@@ -303,3 +370,4 @@ async function main() {
 }
 
 main().catch(console.error);
+
