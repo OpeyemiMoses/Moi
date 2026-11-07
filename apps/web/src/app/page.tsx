@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import QRCode from 'qrcode';
 import {
   Activity,
@@ -9,6 +10,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   BadgeCheck,
+  BookOpen,
   Bot,
   Building2,
   Check,
@@ -2081,18 +2083,32 @@ export default function MoiAppPage() {
             <a href="#corridors" className="hover:text-[#087F5B] transition whitespace-nowrap">
               Corridors & Telemetry
             </a>
+            <Link
+              href="/docs"
+              className="hover:text-[#087F5B] transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 text-[#087F5B] font-bold"
+            >
+              <BookOpen className="w-3 h-3 shrink-0" />
+              <span className="whitespace-nowrap">Documentation</span>
+            </Link>
             <a
               href="/api/identity/agent.json"
               target="_blank"
               rel="noreferrer"
               className="hover:text-[#087F5B] transition inline-flex items-center gap-1 whitespace-nowrap shrink-0"
             >
-              <span className="whitespace-nowrap">Docs (ERC-8004)</span>
+              <span className="whitespace-nowrap">ERC-8004</span>
               <ArrowUpRight className="w-3 h-3 shrink-0" />
             </a>
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/docs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
+              <span>Docs</span>
+            </Link>
             <button
               onClick={handleLaunchApp}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
@@ -2572,34 +2588,66 @@ export default function MoiAppPage() {
         </section>
 
         {/* FULL FOOTER */}
-        <footer className="relative z-10 border-t border-[#0B0F14]/10 bg-[#F8FAFC] py-6 sm:py-8 mt-auto">
-          <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5">
-              <MoiRibbonMark className="w-7 h-5.5" />
-              <div>
-                <span className="font-black text-base text-[#0B0F14]">MOI</span>
-                <span className="text-xs text-[#0B0F14]/60 ml-2">Your AI Agent. Your Treasury.</span>
+        <footer className="relative z-10 border-t border-[#0B0F14]/10 bg-[#F8FAFC] py-8 mt-auto">
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 space-y-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5">
+                <MoiRibbonMark className="w-7 h-5.5" />
+                <div>
+                  <span className="font-black text-base text-[#0B0F14]">MOI</span>
+                  <span className="text-xs text-[#0B0F14]/60 ml-2">Your AI Agent. Your Treasury.</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-5 text-xs text-[#0B0F14]/70 font-medium">
+                <a href="https://celoscan.io" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
+                  CeloScan (42220)
+                </a>
+                <a href="https://api.textilecredit.com" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
+                  Textile FX Docs
+                </a>
+                <a href="https://gateway.usebuy.ai" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
+                  buy / x402 RFC
+                </a>
+                <a href="/api/identity/agent.json" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
+                  ERC-8004 agent.json
+                </a>
+              </div>
+
+              <p className="text-xs text-[#0B0F14]/50">
+                Agents on Open Rails Hackathon · November 2026
+              </p>
+            </div>
+
+            {/* Documentation Centre Navigation Row */}
+            <div className="pt-4 border-t border-[#0B0F14]/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-[#087F5B] font-bold">
+                <BookOpen className="w-3.5 h-3.5" />
+                <Link href="/docs" className="hover:underline">
+                  MOI Documentation Centre
+                </Link>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 text-[#0B0F14]/65">
+                <Link href="/docs/getting-started/introduction" className="hover:text-[#087F5B] transition">
+                  Introduction
+                </Link>
+                <Link href="/docs/getting-started/quick-start" className="hover:text-[#087F5B] transition">
+                  Getting Started
+                </Link>
+                <Link href="/docs/how-it-works/system-architecture" className="hover:text-[#087F5B] transition">
+                  Architecture
+                </Link>
+                <Link href="/docs/security/security-overview" className="hover:text-[#087F5B] transition">
+                  Security
+                </Link>
+                <Link href="/docs/developers/developer-overview" className="hover:text-[#087F5B] transition">
+                  Developers
+                </Link>
+                <Link href="/docs/reference/faq" className="hover:text-[#087F5B] transition">
+                  FAQ
+                </Link>
               </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-5 text-xs text-[#0B0F14]/70 font-medium">
-              <a href="https://celoscan.io" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
-                CeloScan (42220)
-              </a>
-              <a href="https://api.textilecredit.com" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
-                Textile FX Docs
-              </a>
-              <a href="https://gateway.usebuy.ai" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
-                buy / x402 RFC
-              </a>
-              <a href="/api/identity/agent.json" target="_blank" rel="noreferrer" className="hover:text-[#087F5B] transition">
-                ERC-8004 agent.json
-              </a>
-            </div>
-
-            <p className="text-xs text-[#0B0F14]/50">
-              Agents on Open Rails Hackathon · November 2026
-            </p>
           </div>
         </footer>
 
@@ -3168,6 +3216,23 @@ export default function MoiAppPage() {
                 </button>
               );
             })}
+
+            {/* Documentation Centre Link */}
+            <Link
+              href="/docs"
+              title="Documentation Centre"
+              className={`w-full flex items-center ${
+                isSidebarCollapsed ? 'justify-center px-2 py-2' : 'gap-2.5 px-3 py-2'
+              } rounded-lg text-xs font-semibold text-white/70 hover:text-white hover:bg-white/5 transition mt-2 pt-2 border-t border-white/5`}
+            >
+              <BookOpen className="w-3.5 h-3.5 shrink-0 text-[#00E676]" />
+              {!isSidebarCollapsed && (
+                <div className="flex items-center justify-between w-full">
+                  <span className="truncate">Documentation</span>
+                  <ArrowUpRight className="w-3 h-3 text-white/40 shrink-0 ml-1" />
+                </div>
+              )}
+            </Link>
           </nav>
         </div>
 

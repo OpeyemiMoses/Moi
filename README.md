@@ -4,75 +4,85 @@ MOI is an institutional, non-custodial treasury operating system and financial a
 
 ---
 
-## Note for Judges on How to Test (Live on Celo Mainnet)
+## Technical Verification & Testing Guide for Evaluators (Celo Mainnet)
 
-Welcome Judges of the **Agents on Open Rails Hackathon** (November 2026). MOI is fully deployed, connected, and operating live on Celo Mainnet. You can evaluate MOI through the live production deployments or locally in under two minutes.
+MOI operates live on Celo Mainnet (`chainId: 42220`). Evaluators can verify system guarantees either against the deployed production endpoints or via local test execution.
 
-### Live Production Deployments
+### Live Production Endpoints
 
-* **Live Web Application (Vercel)**: [https://moi-theta-three.vercel.app](https://moi-theta-three.vercel.app)
-* **Production Alias**: [https://moi-yemigraffixs-projects.vercel.app](https://moi-yemigraffixs-projects.vercel.app)
-* **Live Backend & Database (Railway)**: [https://web-production-858b2.up.railway.app](https://web-production-858b2.up.railway.app)
-* **Live ERC-8004 Agent Identity Endpoint**: [https://moi-theta-three.vercel.app/api/identity/agent.json](https://moi-theta-three.vercel.app/api/identity/agent.json)
-
----
-
-### Verified Onchain Identifiers & Live Test Wallet
-
-* **Official Hackathon Test Wallet**: `0x78b7b043921EE70806c66905E31fc2D9E75455a6`  
-  *(Funded with real CELO, USD₮, and cNGN on Celo Mainnet. Connect this wallet to immediately test live portfolio telemetry, rebalancing, and swaps).*
-* **Celo Transaction Attribution Tag**: `celo_c9cb9a59fc4c`  
-  *(Schema 0 trailer `63656c6f5f633963623961353966633463110080218021802180218021802180218021` appended to all calldata).*
-* **ERC-8004 Agent ID**: **#164** on Celo Mainnet Canonical Identity Registry (`0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`).
-* **Active Verified FX Corridors**: `CELO ↔ USD₮`, `cNGN ↔ USD₮`, `wARS ↔ USD₮`, `wBRL ↔ USD₮`, `wCOP ↔ USD₮`, `wMXN ↔ USD₮`.
+* Web Application (Vercel): [https://moi-theta-three.vercel.app](https://moi-theta-three.vercel.app)
+* Production Alias: [https://moi-yemigraffixs-projects.vercel.app](https://moi-yemigraffixs-projects.vercel.app)
+* Backend & Database Service (Railway): [https://web-production-858b2.up.railway.app](https://web-production-858b2.up.railway.app)
+* Public Documentation Centre: [https://moi-theta-three.vercel.app/docs](https://moi-theta-three.vercel.app/docs)
+* ERC-8004 Canonical Agent Identity: [https://moi-theta-three.vercel.app/api/identity/agent.json](https://moi-theta-three.vercel.app/api/identity/agent.json)
+* Live Invoicing Checkout Route: [https://moi-theta-three.vercel.app/invoice/inv_live_test](https://moi-theta-three.vercel.app/invoice/inv_live_test)
 
 ---
 
-### Step-by-Step Evaluation Walkthrough
+### Onchain Identifiers & Verified Parameters
 
-#### 1. Live Wallet Connection & Real-Time Sync
-1. Open [https://moi-theta-three.vercel.app](https://moi-theta-three.vercel.app) (or `http://localhost:3000`).
-2. Click **Connect Wallet** in the top navigation bar.
-3. Connect with any standard Celo wallet (MetaMask, Rabby, Valora, or MiniPay) switched to **Celo Mainnet (Chain ID 42220)**.
-4. Sign the Sign-In with Ethereum (SIWE, EIP-4361) challenge to establish an isolated multi-tenant session.
-5. Observe live onchain balances for **CELO**, **USD₮**, **cNGN**, **wBRL**, **wARS**, and **wCOP** synchronizing in real time directly from Celo smart contracts.
+* Celo Mainnet Chain ID: `42220` (EVM JSON-RPC: `https://forno.celo.org`)
+* Canonical Identity Registry: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` (ERC-8004 Agent ID `#164`)
+* Textile LimitOrderReactor Target: `0xa9AA0a64769cBed4d3B1Ceb4Df01CdE915C235b3`
+* Permit2 Contract: `0x000000000022D473030F116dDEE9F6B43aC78BA3`
+* ERC-8021 Transaction Attribution Tag: `celo_c9cb9a59fc4c` (Schema 0 suffix: `63656c6f5f633963623961353966633463110080218021802180218021802180218021`)
+* Verified Hackathon Test Wallet: `0x78b7b043921EE70806c66905E31fc2D9E75455a6` (funded with CELO, USD₮, and cNGN on Celo Mainnet)
 
-#### 2. Target Portfolio Allocation & Dynamic Rebalancing
-1. On the **Dashboard**, locate the **Target Portfolio Allocation & Rebalance Guard**.
-2. Slide the allocation controller to set a target reserve ratio (e.g., `80% USD₮ / 20% Local Currency`).
-3. Notice how MOI computes portfolio drift against live market rates in real time.
-4. When drift exceeds tolerance, click **1-Click Rebalance** to automatically prefill the institutional swap terminal with the exact calculated delta.
+---
 
-#### 3. Live Currency Swaps with Calldata Attribution
-1. Navigate to the **Treasury & FX** tab.
-2. Select any emerging market trading pair (e.g., `CELO → USD₮`, `USD₮ → cNGN`, or `cNGN → USD₮`).
-3. Enter an amount and inspect the live firm RFQ quote with guaranteed zero slippage.
-4. Click **Execute Swap**.
-5. When your wallet prompts the transaction, verify that:
-   * The destination is the verified router or reactor on Celo.
-   * Calldata includes the Schema 0 attribution trailer (`celo_c9cb9a59fc4c`).
-   * The transaction confirms on CeloScan and balances update instantly in your dashboard.
+### Step-by-Step Technical Evaluation Workflows
 
-#### 4. Cryptographic $0-Gas Invoicing & QR Code Checkout
-1. Navigate to the **Invoices & Pay** tab.
-2. Click **Create New Invoice**, enter client name (e.g., `Acme Corp`), amount (e.g., `10`), and select currency (`USD₮` or `cNGN`).
+#### Test 1: Cryptographic Authentication & Multi-Tenant State Isolation
+1. Direct the browser to `https://moi-theta-three.vercel.app`.
+2. Trigger **Connect Wallet** using MetaMask, Rabby, or Valora connected to Celo Mainnet (`chainId: 42220`).
+3. Under the hood, MOI executes an EIP-4361 (Sign-In with Ethereum) challenge handshake:
+   * Client calls `GET /api/auth/nonce` to obtain a cryptographically random, single-use nonce persisted with a 5-minute TTL.
+   * Wallet prompts signature of the SIWE domain, URI, chain ID, and nonce.
+   * Client submits the signed payload to `POST /api/auth/verify`.
+   * Server validates the signature using `viem/siwe`, invalidates the nonce to prevent replay attacks, sets an `HttpOnly`, `SameSite=Strict`, `Secure` session cookie, and establishes a tenant-scoped session in PostgreSQL with row-level isolation.
+4. The dashboard queries `GET /api/treasury`, executing multicall batch queries against `https://forno.celo.org` to fetch atomic onchain ERC-20 token balances and allowances across CELO, USD₮, cNGN, wBRL, wARS, and wCOP.
+
+#### Test 2: Deterministic Policy Engine & Drift Rebalancing
+1. On the dashboard, navigate to the **Target Portfolio Allocation & Rebalance Guard**.
+2. Adjust the target stablecoin ratio (e.g. from `70% USD₮` to `90% USD₮`).
+3. The engine evaluates portfolio drift via `calculatePortfolioDrift()`:
+   $$\text{Drift} = \left|\frac{\text{Balance}_{\text{USD}\tau}}{\text{Total Portfolio Value}} - \text{Target Allocation}\right|$$
+4. When drift exceeds the 5% rebalance threshold, the system computes the exact rebalance delta in base asset units.
+5. Click **1-Click Rebalance**. The dashboard dispatches the parameters to the swap execution terminal, prefilling token addresses, input amounts, and calculating minimum acceptable output tokens based on the mandate's `maxSlippageBps`.
+
+#### Test 3: Textile FX v2 RFQ Discovery & Calldata Attribution Verification
+1. Open the **Treasury & FX** interface.
+2. Select the trading pair (e.g., `CELO -> USD₮`, `USD₮ -> cNGN`, or `cNGN -> USD₮`) and enter an amount (e.g. `0.5`).
+3. The application dispatches `POST /api/fx/quote` with the taker address, sellToken, buyToken, and amount.
+4. The backend queries `https://api.textilecredit.com/v2/rfq/preview` to obtain a real-time market maker quote.
+5. The 18-rule deterministic policy engine (`evaluateSwapPolicy()`) evaluates the quote against the active `TreasuryMandate`:
+   * Verifies `MANDATE_NOT_PAUSED`, `PER_TRADE_CAP`, `DAILY_SELL_CAP`, `MINIMUM_RESERVE_PRESERVED`, and `APPROVED_REACTOR_TARGET` (`0xa9AA0a64769cBed4d3B1Ceb4Df01CdE915C235b3`).
+   * Validates calldata integrity (`CALLDATA_AND_VALUE_GUARD`).
+   * Appends the Schema 0 ERC-8021 attribution trailer (`celo_c9cb9a59fc4c`) to the transaction data.
+6. Click **Execute Swap**. The user's wallet presents the transaction for onchain signature:
+   * Inspect the transaction calldata in the wallet or on CeloScan to confirm the hex trailer ends with `63656c6f5f633963623961353966633463110080218021802180218021802180218021`.
+   * Upon broadcast and inclusion in a Celo block, the frontend polls transaction receipt confirmation and updates live balances directly via Celo RPC.
+
+#### Test 4: EIP-712 Zero-Gas Invoicing & Dynamic Onchain Settlement
+1. Open the **Invoices & Pay** tab.
+2. Click **Create New Invoice**, specify the client identifier, settlement currency (`USD₮` or `cNGN`), and invoice amount.
 3. Click **Sign & Issue Invoice with Wallet ($0 Gas)**.
-4. Sign the EIP-712 structured data message in your wallet (**costs $0.00 in gas**).
-5. Click **View QR / Pay Page** or share the link.
-6. The public checkout page (`/invoice/[id]`) displays:
-   * Formatted invoice details, recipient address, and amount due.
-   * Dynamic QR code pointing directly to the invoice payment URL.
-   * A one-click **Pay Invoice Now** trigger that directly invokes the onchain transfer with attribution tag.
-   * Instant status change to **PAID & SETTLED** with verified transaction hash upon onchain confirmation.
+4. The wallet prompts an EIP-712 typed signature over the `MoiInvoice` schema (`invoiceId`, `recipient`, `amount`, `token`, `deadline`, `salt`). The invoice is cryptographically authorized with zero network gas fees.
+5. Open the resulting public checkout page at `/invoice/[id]` (e.g. `https://moi-theta-three.vercel.app/invoice/inv_live_test`):
+   * Inspect the dynamically generated SVG QR code (encodes the public invoice URL for scanning).
+   * Click **Pay Invoice Now** to trigger an onchain ERC-20 `transfer` directly to the invoice issuer address with attribution tag appended.
+   * Upon transaction receipt verification by the backend route (`GET /api/invoices/[id]`), the invoice record transitions to `PAID`, persisting the confirmed `settlementTxHash` and block timestamp in PostgreSQL.
 
-#### 5. Verify the Automated Test Suite (212/212 Passing Tests)
-Run the automated test suite locally to verify all 28 test suites covering financial invariants, adversarial security, SIWE authentication, and live integrations:
+#### Test 5: Vitest Automated Verification Suite (212 Tests across 28 Suites)
+Run the automated test suite locally to verify financial invariants, restricted signer bounds, adversarial attacks, SIWE security, and live integrations:
 ```bash
 git clone https://github.com/OpeyemiMoses/Moi.git
 cd Moi
 npm install
 npm test
 ```
+* Test execution time: ~38s across 28 test suites.
+* Key coverage areas: `tests/adversarial/*` (first-trade authorization, policy attestation forgery, event accounting tampering), `tests/auth/*` (SIWE replay attacks, tenant isolation, session invalidation), `tests/concurrency/*` (financial race condition prevention, double-spend resistance), and `tests/audit/*` (zero mock data assertions).
 *Expected Result: 28 test files passed, 212 tests passed (100% success).*
 
 ---
