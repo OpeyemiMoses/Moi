@@ -3417,17 +3417,16 @@ export default function MoiAppPage() {
                   <Download className="w-3.5 h-3.5 text-[#087F5B]" />
                   <span>Receive</span>
                 </button>
-                <button
-                  onClick={() => {
-                    setWithdrawError(null);
-                    setWithdrawSuccess(null);
-                    setShowWithdrawModal(true);
-                  }}
-                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#00E676]/15 hover:bg-[#00E676]/25 border border-[#00E676]/30 text-xs font-bold text-[#087F5B] transition shadow-xs cursor-pointer"
+                <div
+                  className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-semibold text-slate-400 cursor-not-allowed select-none transition"
+                  title="Direct bank off-ramp is coming soon (pending licensed VASP payment integration)"
                 >
-                  <Building2 className="w-3.5 h-3.5 text-[#087F5B]" />
-                  <span>Withdraw to Bank</span>
-                </button>
+                  <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Withdraw</span>
+                  <span className="text-[9px] font-extrabold uppercase tracking-tight bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-md">
+                    Coming Soon
+                  </span>
+                </div>
                 <button
                   onClick={() => setActiveTab('treasury')}
                   className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-[#F8FAFC] hover:bg-[#B6F7D2]/40 border border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14] transition cursor-pointer"
@@ -6526,11 +6525,16 @@ export default function MoiAppPage() {
                   <Building2 className="w-4 h-4 text-[#087F5B]" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-[#0B0F14]">
-                    Withdraw to Bank Account
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0B0F14]">
+                      Withdraw to Bank Account
+                    </h3>
+                    <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                      Coming Soon
+                    </span>
+                  </div>
                   <p className="text-[11px] text-[#0B0F14]/55">
-                    Direct local bank settlement via instant domestic payment rails
+                    Direct local bank settlement via instant domestic payment rails (in development)
                   </p>
                 </div>
               </div>
@@ -6886,24 +6890,14 @@ export default function MoiAppPage() {
                   <div className="pt-2">
                     <button
                       type="button"
-                      onClick={handleExecuteWithdraw}
-                      disabled={withdrawLoading}
-                      className="w-full py-2.5 rounded-full bg-[#00E676] hover:bg-[#00c968] text-[#0B0F14] text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                      disabled={true}
+                      className="w-full py-2.5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-not-allowed"
                     >
-                      {withdrawLoading ? (
-                        <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          Settling with Central Payment Rail...
-                        </>
-                      ) : (
-                        <>
-                          <Building2 className="w-3.5 h-3.5" />
-                          Confirm & Withdraw to Bank
-                        </>
-                      )}
+                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Bank Off-Ramp Coming Soon</span>
                     </button>
                     <p className="text-[10px] text-[#0B0F14]/50 text-center mt-2">
-                      Direct settlement via verified national payment systems · Zero intermediary escrow risk
+                      Fiat banking rail integration is in development · Crypto swaps & onchain transfers remain 100% active
                     </p>
                   </div>
                 </>
