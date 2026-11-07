@@ -8,3 +8,4 @@ export default async function InvoicesPluralRedirect({
   const { id } = await params;
   redirect(`/invoice/${encodeURIComponent(id)}`);
 }
+
