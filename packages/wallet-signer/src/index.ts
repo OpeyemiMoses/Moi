@@ -1079,12 +1079,23 @@ export class CeloChainService {
               args: [walletAddress, TEXTILE_CONTRACTS.LimitOrderReactor],
             }),
           ]);
+
+          let finalBalance = balance;
+          if (asset.symbol === 'CELO') {
+            try {
+              const nativeBal = await this.publicClient.getBalance({ address: walletAddress });
+              if (nativeBal > balance) {
+                finalBalance = nativeBal;
+              }
+            } catch {}
+          }
+
           return {
             symbol: asset.symbol,
             name: asset.name,
             address: asset.address,
             decimals: asset.decimals,
-            balanceAtomic: balance.toString(),
+            balanceAtomic: finalBalance.toString(),
             allowanceReactorAtomic: allowance.toString(),
             flag: asset.flag,
             region: asset.region,

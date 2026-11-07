@@ -646,6 +646,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, invoice: result.invoice });
     }
 
+    if (action === 'delete_invoice') {
+      const { invoiceId } = body;
+      if (!invoiceId) {
+        return NextResponse.json(
+          { error: 'Missing invoiceId.' },
+          { status: 400 }
+        );
+      }
+      const result = moiDb.deleteInvoiceForUser(invoiceId, tenantUserId);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error || 'Failed to delete invoice' }, { status: 400 });
+      }
+      return NextResponse.json({ ok: true });
+    }
+
     if (action === 'export_audit_bundle') {
       const bundle = moiDb.exportAuditBundleForUser(tenantUserId);
       return NextResponse.json({

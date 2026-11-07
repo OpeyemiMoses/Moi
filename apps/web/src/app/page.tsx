@@ -572,7 +572,21 @@ export default function MoiAppPage() {
         ],
       });
 
-      setSwapStepText(`Swap confirmed! Tx: ${swapTxHash.slice(0, 10)}... Recording in treasury ledger...`);
+      setSwapStepText(`Step 2/2: Swap broadcasted (${swapTxHash.slice(0, 10)}...). Waiting for Celo block confirmation...`);
+
+      // Poll until Celo block confirms receipt so balances update accurately
+      for (let i = 0; i < 20; i++) {
+        await new Promise((r) => setTimeout(r, 1000));
+        try {
+          const receipt = await eth.request({
+            method: 'eth_getTransactionReceipt',
+            params: [swapTxHash],
+          });
+          if (receipt && receipt.blockNumber) break;
+        } catch {}
+      }
+
+      setSwapStepText(`Swap confirmed onchain! Recording in double-entry audit ledger...`);
 
       // 3. Record confirmed swap in MOI treasury double-entry audit ledger
       await fetch('/api/treasury', {
@@ -599,7 +613,11 @@ export default function MoiAppPage() {
         attributionTag: ATTRIBUTION_TAG,
       });
 
-      await fetchAllData();
+      // Synchronize live balances across all Celo RPC nodes
+      await fetchAllData(activeOwnerWallet);
+      setTimeout(() => {
+        fetchAllData(activeOwnerWallet);
+      }, 2000);
     } catch (err: any) {
       console.error('Swap execution error:', err);
       setSwapError(err?.message || 'Swap transaction was rejected or failed on Celo Mainnet.');
@@ -948,6 +966,15 @@ export default function MoiAppPage() {
     }
   }, [isWagmiConnected, wagmiAddress, wagmiStatus, fetchAllData]);
 
+  // Periodic background balance refresh to keep live balances synchronized in real time
+  useEffect(() => {
+    if (!hasConnectedOwnerWallet || !activeOwnerWallet) return;
+    const interval = setInterval(() => {
+      fetchAllData(activeOwnerWallet);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [hasConnectedOwnerWallet, activeOwnerWallet, fetchAllData]);
+
   // Handle wallet change event from browser extension
   useEffect(() => {
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
@@ -1179,6 +1206,30 @@ export default function MoiAppPage() {
       }
     } catch (err) {
       console.error('Failed to mark invoice paid:', err);
+    }
+  };
+
+  // Handler: Delete Invoice
+  const handleDeleteInvoice = async (invoiceId: string) => {
+    if (!confirm('Are you sure you want to permanently delete this invoice?')) return;
+    try {
+      const res = await fetch('/api/treasury', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'delete_invoice',
+          invoiceId,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        if (selectedInvoiceForModal && selectedInvoiceForModal.id === invoiceId) {
+          setSelectedInvoiceForModal(null);
+        }
+        await fetchAllData();
+      }
+    } catch (err) {
+      console.error('Failed to delete invoice:', err);
     }
   };
 
@@ -3471,26 +3522,51 @@ export default function MoiAppPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                {(treasuryData?.liveBalances || [])
-                  .slice(0, 6)
-                  .map((b: any) => (
-                    <div
-                      key={b.symbol}
-                      className="rounded-xl bg-[#F8FAFC] p-2.5 sm:p-3 border border-[#0B0F14]/8"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs">{b.symbol}</span>
-                        <span className="text-[9px] font-bold text-[#087F5B] px-1.5 py-0.5 rounded bg-[#B6F7D2]/40">CELO</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
+                {(() => {
+                  const balances = [...(treasuryData?.liveBalances || [])];
+                  const coreOrder = ['CELO', 'USDT', 'cNGN', 'wARS', 'wBRL', 'wCOP', 'wMXN', 'USDC'];
+                  const sorted = balances.sort((a, b) => {
+                    const aHas = BigInt(a.balanceAtomic || '0') > 0n ? 1 : 0;
+                    const bHas = BigInt(b.balanceAtomic || '0') > 0n ? 1 : 0;
+                    if (aHas !== bHas) return bHas - aHas;
+                    const aIndex = coreOrder.indexOf(a.symbol);
+                    const bIndex = coreOrder.indexOf(b.symbol);
+                    return (aIndex === -1 ? 99 : aIndex) - (bIndex === -1 ? 99 : bIndex);
+                  });
+                  return sorted.slice(0, 7).map((b: any) => {
+                    const hasBal = BigInt(b.balanceAtomic || '0') > 0n;
+                    return (
+                      <div
+                        key={b.symbol}
+                        className={`rounded-xl p-2.5 sm:p-3 border transition ${
+                          hasBal
+                            ? 'bg-[#B6F7D2]/20 border-[#00E676]/40 shadow-xs'
+                            : 'bg-[#F8FAFC] border-[#0B0F14]/8'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-[#0B0F14]">{b.symbol}</span>
+                          <span
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                              hasBal
+                                ? 'bg-[#00E676] text-[#0B0F14]'
+                                : 'bg-[#B6F7D2]/40 text-[#087F5B]'
+                            }`}
+                          >
+                            CELO
+                          </span>
+                        </div>
+                        <p className={`font-mono-num text-sm sm:text-base font-extrabold mt-1 ${hasBal ? 'text-[#087F5B]' : 'text-[#0B0F14]'}`}>
+                          {formatAtomicWithCommas(b.balanceAtomic, b.decimals, 2)}
+                        </p>
+                        <p className="text-[9px] text-[#0B0F14]/50 truncate mt-0.5">
+                          {b.region}
+                        </p>
                       </div>
-                      <p className="font-mono-num text-sm sm:text-base font-extrabold mt-1">
-                        {formatAtomicWithCommas(b.balanceAtomic, b.decimals, 2)}
-                      </p>
-                      <p className="text-[9px] text-[#0B0F14]/50 truncate mt-0.5">
-                        {b.region}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  });
+                })()}
               </div>
             </div>
 
@@ -4801,6 +4877,14 @@ export default function MoiAppPage() {
                                   Mark Paid
                                 </button>
                               )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteInvoice(inv.id)}
+                                className="p-1 rounded-md border border-red-200 hover:bg-red-50 text-red-500 hover:text-red-700 transition cursor-pointer"
+                                title="Delete invoice"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -7115,6 +7199,15 @@ export default function MoiAppPage() {
                     Mark Invoice as Paid / Settled
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteInvoice(selectedInvoiceForModal.id)}
+                  className="w-full py-2 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete This Invoice</span>
+                </button>
               </div>
             </div>
           </div>

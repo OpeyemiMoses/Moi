@@ -2386,6 +2386,35 @@ export class MoiDatabase {
     this.save();
     return { ok: true, invoice: inv };
   }
+
+  deleteInvoiceForUser(
+    invoiceId: string,
+    userId?: string
+  ): { ok: boolean; error?: string } {
+    this.state = this.load();
+    if (!this.state.invoices) return { ok: false, error: 'No invoices found.' };
+    const initialLength = this.state.invoices.length;
+    this.state.invoices = this.state.invoices.filter((i) => {
+      if (i.id !== invoiceId) return true;
+      if (userId && i.userId && i.userId !== userId) return true;
+      return false;
+    });
+
+    if (this.state.invoices.length === initialLength) {
+      return { ok: false, error: 'Invoice not found or unauthorized.' };
+    }
+
+    this.appendAuditEvent({
+      treasuryId: this.state.treasury.id,
+      category: 'SECURITY_CONTROL',
+      severity: 'INFO',
+      title: `Invoice Deleted · ${invoiceId}`,
+      detail: `Operator deleted invoice ${invoiceId} from the treasury database.`,
+    });
+
+    this.save();
+    return { ok: true };
+  }
 }
 
 export const moiDb = new MoiDatabase();
