@@ -68,7 +68,21 @@ Crucially, MOI solves the primary risk of autonomous financial agents: **rogue e
 
 ---
 
-## 4. Verification & Testing Rigor
+## 4. Live Celo Mainnet Identity & Verified Attribution Proofs
+
+| Parameter | Mainnet Proof / Verification | Notes |
+| :--- | :--- | :--- |
+| **ERC-8004 Identity Registry** | `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` | Canonical registry contract on Celo Mainnet (42220) |
+| **Agent Token ID** | **#10048** | Minted and confirmed on Celo Mainnet |
+| **Registration Transaction** | [`0x2919af6672409932a2e86ce669401c3c12fa4d2029a16e53a8a5a146b258324f`](https://celoscan.io/tx/0x2919af6672409932a2e86ce669401c3c12fa4d2029a16e53a8a5a146b258324f) | Block #82,158,601 (Status: Success) |
+| **Attribution Tag (ERC-8021)**| **`celo_c9cb9a59fc4c`** | Official Loops House Assigned Tag (Schema 0) |
+| **Calldata Suffix** | `0x63656c6f5f633963623961353966633463110080218021802180218021802180218021` | Decoded via `@celo/attribution-tags` |
+| **Agent / Operator Wallet** | [`0x78b7b043921EE70806c66905E31fc2D9E75455a6`](https://celoscan.io/address/0x78b7b043921EE70806c66905E31fc2D9E75455a6) | Mainnet account holding live CELO gas reserves |
+| **8004scan Explorer Link** | [8004scan.io/agents/celo/10048](https://8004scan.io/agents/celo/10048) | Live machine-readable agent profile |
+
+---
+
+## 5. Verification & Testing Rigor
 
 - **Automated Tests**: **202 / 202 tests passing** across 26 test suites (`npm test -- run`).
 - **Adversarial Hardening**: 31 dedicated attack test scenarios verifying bypass prevention, attestation tampering rejection, and replay defense.
