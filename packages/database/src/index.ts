@@ -2305,6 +2305,18 @@ export class MoiDatabase {
     );
   }
 
+  getInvoiceById(invoiceId: string): InvoiceRecord | null {
+    this.state = this.load();
+    const cleanId = decodeURIComponent(invoiceId).trim();
+    return (
+      (this.state.invoices || []).find(
+        (inv) =>
+          inv.id === cleanId ||
+          inv.invoiceNumber?.toLowerCase() === cleanId.toLowerCase()
+      ) || null
+    );
+  }
+
   createInvoiceForUser(
     input: {
       invoiceNumber?: string;
@@ -2376,12 +2388,23 @@ export class MoiDatabase {
   ): { ok: boolean; invoice?: InvoiceRecord; error?: string } {
     this.state = this.load();
     if (!this.state.invoices) return { ok: false, error: 'No invoices found.' };
-    const inv = this.state.invoices.find((i) => i.id === invoiceId);
+    const cleanId = decodeURIComponent(invoiceId).trim();
+    const inv = this.state.invoices.find(
+      (i) => i.id === cleanId || i.invoiceNumber?.toLowerCase() === cleanId.toLowerCase()
+    );
     if (!inv) return { ok: false, error: 'Invoice not found.' };
 
     inv.status = 'PAID';
     inv.paidAt = new Date().toISOString();
     if (paidTxHash) inv.paidTxHash = paidTxHash;
+
+    this.appendAuditEvent({
+      treasuryId: this.state.treasury.id,
+      category: 'SECURITY_CONTROL',
+      severity: 'INFO',
+      title: `Invoice Settled · ${inv.invoiceNumber}`,
+      detail: `Invoice ${inv.id} (${inv.invoiceNumber}) confirmed onchain with tx ${paidTxHash || 'manual settlement'}. Credited ${inv.amount} ${inv.tokenSymbol} to creator ${inv.creatorWallet}.`,
+    });
 
     this.save();
     return { ok: true, invoice: inv };

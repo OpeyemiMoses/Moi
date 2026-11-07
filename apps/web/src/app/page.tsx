@@ -1054,21 +1054,19 @@ export default function MoiAppPage() {
     activeOwnerWallet,
   ]);
 
-  // Dynamic QR Code generation for Selected Invoice Modal
+  // Dynamic QR Code generation for Selected Invoice Modal (Web Checkout URL)
   useEffect(() => {
     if (!selectedInvoiceForModal) return;
-    const dest = selectedInvoiceForModal.creatorWallet || activeOwnerWallet || '';
-    const paymentUri =
-      selectedInvoiceForModal.paymentUri ||
-      `celo:${dest}?amount=${selectedInvoiceForModal.amount}&token=${selectedInvoiceForModal.tokenSymbol}&memo=${encodeURIComponent(selectedInvoiceForModal.invoiceNumber)}`;
-    QRCode.toDataURL(paymentUri, {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const paymentUrl = `${origin}/invoice/${encodeURIComponent(selectedInvoiceForModal.id)}`;
+    QRCode.toDataURL(paymentUrl, {
       width: 256,
       margin: 1.5,
       color: { dark: '#0B0F14', light: '#FFFFFF' },
     })
       .then((url) => setSelectedInvoiceQrUrl(url))
       .catch((err) => console.error('Invoice QR error:', err));
-  }, [selectedInvoiceForModal, activeOwnerWallet]);
+  }, [selectedInvoiceForModal]);
 
   // Handler: Create and Cryptographically Sign Invoice ($0 and Zero Gas)
   const handleCreateSignedInvoice = async () => {
@@ -4876,15 +4874,14 @@ export default function MoiAppPage() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const uri =
-                                    inv.paymentUri ||
-                                    `celo:${inv.creatorWallet}?amount=${inv.amount}&token=${inv.tokenSymbol}&memo=${encodeURIComponent(inv.invoiceNumber)}`;
-                                  navigator.clipboard.writeText(uri);
+                                  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                                  const paymentUrl = `${origin}/invoice/${encodeURIComponent(inv.id)}`;
+                                  navigator.clipboard.writeText(paymentUrl);
                                   setInvoiceCopiedId(inv.id);
                                   setTimeout(() => setInvoiceCopiedId(null), 2000);
                                 }}
-                                className="p-1 rounded-md border border-[#0B0F14]/15 hover:bg-slate-100 text-[#0B0F14]/70 transition"
-                                title="Copy Payment Link"
+                                className="p-1 rounded-md border border-[#0B0F14]/15 hover:bg-slate-100 text-[#0B0F14]/70 transition cursor-pointer"
+                                title="Copy Web Checkout Link"
                               >
                                 {invoiceCopiedId === inv.id ? (
                                   <Check className="w-3.5 h-3.5 text-[#087F5B]" />
@@ -4892,6 +4889,15 @@ export default function MoiAppPage() {
                                   <Copy className="w-3.5 h-3.5" />
                                 )}
                               </button>
+                              <a
+                                href={`/invoice/${encodeURIComponent(inv.id)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1 rounded-md border border-[#0B0F14]/15 hover:bg-slate-100 text-[#0B0F14]/70 transition cursor-pointer"
+                                title="Open Payment Checkout Page"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
                               {inv.status !== 'PAID' && (
                                 <button
                                   type="button"
@@ -7151,7 +7157,7 @@ export default function MoiAppPage() {
                   )}
                 </div>
                 <p className="text-[11px] text-[#0B0F14]/60 text-center">
-                  Scan with Valora, MiniPay, MetaMask, or any Web3 mobile wallet
+                  Scan with any phone camera or Web3 wallet to open instant checkout
                 </p>
               </div>
 
@@ -7188,10 +7194,9 @@ export default function MoiAppPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    const uri =
-                      selectedInvoiceForModal.paymentUri ||
-                      `celo:${selectedInvoiceForModal.creatorWallet}?amount=${selectedInvoiceForModal.amount}&token=${selectedInvoiceForModal.tokenSymbol}&memo=${encodeURIComponent(selectedInvoiceForModal.invoiceNumber)}`;
-                    navigator.clipboard.writeText(uri);
+                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                    const paymentUrl = `${origin}/invoice/${encodeURIComponent(selectedInvoiceForModal.id)}`;
+                    navigator.clipboard.writeText(paymentUrl);
                     setInvoiceCopiedId(selectedInvoiceForModal.id);
                     setTimeout(() => setInvoiceCopiedId(null), 2000);
                   }}
@@ -7200,7 +7205,7 @@ export default function MoiAppPage() {
                   {invoiceCopiedId === selectedInvoiceForModal.id ? (
                     <>
                       <Check className="w-3.5 h-3.5" />
-                      <span>Payment Link Copied!</span>
+                      <span>Payment Checkout Link Copied!</span>
                     </>
                   ) : (
                     <>
@@ -7209,6 +7214,16 @@ export default function MoiAppPage() {
                     </>
                   )}
                 </button>
+
+                <a
+                  href={`/invoice/${encodeURIComponent(selectedInvoiceForModal.id)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-2.5 rounded-xl bg-[#0B0F14] hover:bg-[#1E293B] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Payment Checkout Page</span>
+                </a>
 
                 {selectedInvoiceForModal.status !== 'PAID' && (
                   <button

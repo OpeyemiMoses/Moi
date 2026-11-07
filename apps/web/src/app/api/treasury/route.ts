@@ -14,6 +14,16 @@ import { authenticateRequest, validateCsrfOrigin } from '@moi/identity';
 const chainService = new CeloChainService();
 
 export async function GET(req: NextRequest) {
+  const actionParam = req.nextUrl.searchParams.get('action');
+  const invoiceIdParam = req.nextUrl.searchParams.get('id');
+  if (actionParam === 'get_invoice' && invoiceIdParam) {
+    const inv = moiDb.getInvoiceById(invoiceIdParam);
+    if (!inv) {
+      return NextResponse.json({ error: 'Invoice not found.' }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, invoice: inv });
+  }
+
   // Check server-side session authentication
   const auth = await authenticateRequest(req);
 
