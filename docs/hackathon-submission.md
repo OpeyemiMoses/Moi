@@ -76,21 +76,26 @@ Crucially, MOI solves the primary risk of autonomous financial agents: **rogue e
 | **Agent Token ID** | **#10048** | Minted and confirmed on Celo Mainnet |
 | **Registration Transaction** | [`0x2919af6672409932a2e86ce669401c3c12fa4d2029a16e53a8a5a146b258324f`](https://celoscan.io/tx/0x2919af6672409932a2e86ce669401c3c12fa4d2029a16e53a8a5a146b258324f) | Block #82,158,601 (Status: Success) |
 | **Attribution Tag (ERC-8021)**| **`celo_c9cb9a59fc4c`** | Official Loops House Assigned Tag (Schema 0) |
-| **Mainnet Swap (CELO -> USD₮)**| [`0x1e862d8705c93b7b22adf3d99994213caab966bdb4c03cc95e2963bdb3406012`](https://celoscan.io/tx/0x1e862d8705c93b7b22adf3d99994213caab966bdb4c03cc95e2963bdb3406012) | Block #82,160,142 · Mined with tag `celo_c9cb9a59fc4c` |
+| **Mainnet Swap (CELO -> USD₮)**| [`0x9412294beb7c6753486e06929094a4c45f6bdf66b40e612164b799e6b61a2e7f`](https://celoscan.io/tx/0x9412294beb7c6753486e06929094a4c45f6bdf66b40e612164b799e6b61a2e7f) | Block #82,161,819 · Mined & verified with tag `celo_c9cb9a59fc4c` |
+| **Live Native CELO Transfer** | [`0xd5385e41cd699b6dfbc205c1e7627c822733b2a8c7e33557831937929b8f9833`](https://celoscan.io/tx/0xd5385e41cd699b6dfbc205c1e7627c822733b2a8c7e33557831937929b8f9833) | Block #82,161,814 · 0.05 CELO -> `0x479253b82eb63eb36f140ecabf0237cc338084e7` |
+| **Live USD₮ ERC-20 Transfer** | [`0xcf88a95c20136cf8fbf807776da7f6909c69cdb9eed98900cc937e55b35e6348`](https://celoscan.io/tx/0xcf88a95c20136cf8fbf807776da7f6909c69cdb9eed98900cc937e55b35e6348) | Block #82,161,817 · 0.01 USDT -> `0x479253b82eb63eb36f140ecabf0237cc338084e7` |
 | **Permit2 Approval (USD₮)** | [`0x3fe932e556745e3cc60675c1bc3de553e5c251922f6453ca0431a8b6f2c9cdd1`](https://celoscan.io/tx/0x3fe932e556745e3cc60675c1bc3de553e5c251922f6453ca0431a8b6f2c9cdd1) | Block #82,160,196 · Mined with tag `celo_c9cb9a59fc4c` |
 | **Textile Reactor Approval** | [`0x7ae6d558bc46ad12a4285cc9d5ae10255594e273ab96abc0715801d350c9b607`](https://celoscan.io/tx/0x7ae6d558bc46ad12a4285cc9d5ae10255594e273ab96abc0715801d350c9b607) | Block #82,160,199 · Mined with tag `celo_c9cb9a59fc4c` |
 | **Calldata Suffix** | `0x63656c6f5f633963623961353966633463110080218021802180218021802180218021` | Decoded via `@celo/attribution-tags` |
-| **Track 1 LatAm Invoicing** | `INV-CELO-988739` (wARS via Ripio) | Cryptographically signed via EIP-712 ($0 Gas) |
+| **Track 1 LatAm Invoicing** | `INV-LIVE-578907` (wARS via Ripio) | Cryptographically signed via EIP-712 ($0 Gas) |
 | **Track 2A Policy Evaluation**| `18 / 18 Rules Passed` (Authorized) | Avellaneda-Stoikov Stitch Maker (+5 bps inventory skew) |
 | **Track 3 x402 Micropayment** | `srv_textile_volatility_oracle_v2` | Settled in USA₮ via Celo Native Facilitator |
+| **Sub-Agent Creation** | `agent_1794062578357_2bdafc` & `agent_1794062578361_617bf9` | Autonomous Rebalancer & Stitch Quoting Maker |
+| **Portfolio Rebalancing** | Total: $1.98 USD · USD₮: 11% (Target 70%) | Automated drift detection (-59%) & rebalancing trigger |
 | **Agent / Operator Wallet** | [`0x78b7b043921EE70806c66905E31fc2D9E75455a6`](https://celoscan.io/address/0x78b7b043921EE70806c66905E31fc2D9E75455a6) | Mainnet account holding live CELO gas & USD₮ reserves |
+| **Target Recipient Wallet** | [`0x479253b82eb63eb36f140ecabf0237cc338084e7`](https://celoscan.io/address/0x479253b82eb63eb36f140ecabf0237cc338084e7) | Recipient of live CELO & USD₮ transfers |
 | **8004scan Explorer Link** | [8004scan.io/agents/celo/10048](https://8004scan.io/agents/celo/10048) | Live machine-readable agent profile |
 
 ---
 
 ## 5. Verification & Testing Rigor
 
-- **Automated Tests**: **202 / 202 tests passing** across 26 test suites (`npm test -- run`).
+- **Automated Tests**: **212 / 212 tests passing** across 28 test suites (`npm test -- run`).
 - **Adversarial Hardening**: 31 dedicated attack test scenarios verifying bypass prevention, attestation tampering rejection, and replay defense.
 - **Production Next.js Build**: **17 / 17 routes compiled cleanly** (`npm run build`).
 - **Live Probes**: `/api/health`, `/api/health/ready`, `/api/health/live`, and `/api/identity/agent.json` responding with HTTP 200.

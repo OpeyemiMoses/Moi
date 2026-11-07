@@ -246,6 +246,94 @@ export function createInitialState(): MoiDatabaseState {
       paused: false,
       updatedAt: now,
     },
+    {
+      id: 'mandate_celo_usdt',
+      treasuryId: 'treasury_main',
+      agentId: 'agent_fx_treasury',
+      name: 'Celo Native Treasury · CELO ↔ USD₮',
+      naturalLanguageIntent:
+        'Maintain reserve of 10 CELO for gas. Convert excess CELO into USD₮ on Uniswap v3 / Textile to de-risk treasury holdings.',
+      mode: 'autonomous',
+      executionStrategy: 'taker_rfq',
+      chainId: 42220,
+      sellToken: CELO_VERIFIED_ASSETS.CELO.address,
+      buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+      minimumReserveAtomic: '10000000000000000000', // 10 CELO (18 decimals)
+      maxTradeAtomic: '50000000000000000000', // 50 CELO
+      dailySellCapAtomic: '200000000000000000000', // 200 CELO
+      minBuyAmountAtomic: '500000', // 0.50 USDT
+      maxSlippageBps: 100,
+      maxProtocolFeeBps: 25,
+      allowedTargets: [
+        TEXTILE_CONTRACTS.LimitOrderReactor,
+        TEXTILE_CONTRACTS.Permit2,
+        '0x5615CDAb10dc425a742d643d949a7F474C01abc4',
+      ],
+      serviceSpendPerCallAtomic: '50000',
+      serviceDailyCapAtomic: '500000',
+      stitchBaseSpreadBps: 20,
+      stitchInventorySkewBps: 15,
+      paused: false,
+      updatedAt: now,
+    },
+    {
+      id: 'mandate_wcop_usdt',
+      treasuryId: 'treasury_main',
+      agentId: 'agent_stitch_filler',
+      name: 'Colombia Corridor · wCOP ↔ USD₮ (Ripio)',
+      naturalLanguageIntent:
+        'Preserve 500,000 wCOP reserve for local operations. Convert excess wCOP into USD₮ at guaranteed zero-slippage rates.',
+      mode: 'autonomous',
+      executionStrategy: 'taker_rfq',
+      chainId: 42220,
+      sellToken: CELO_VERIFIED_ASSETS.wCOP.address,
+      buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+      minimumReserveAtomic: '500000000000000000000000', // 500,000 wCOP (18 decimals)
+      maxTradeAtomic: '250000000000000000000000', // 250,000 wCOP
+      dailySellCapAtomic: '1000000000000000000000000', // 1,000,000 wCOP
+      minBuyAmountAtomic: '1000000',
+      maxSlippageBps: 100,
+      maxProtocolFeeBps: 25,
+      allowedTargets: [
+        TEXTILE_CONTRACTS.LimitOrderReactor,
+        TEXTILE_CONTRACTS.Permit2,
+      ],
+      serviceSpendPerCallAtomic: '50000',
+      serviceDailyCapAtomic: '500000',
+      stitchBaseSpreadBps: 18,
+      stitchInventorySkewBps: 12,
+      paused: false,
+      updatedAt: now,
+    },
+    {
+      id: 'mandate_wmxn_usdt',
+      treasuryId: 'treasury_main',
+      agentId: 'agent_stitch_filler',
+      name: 'Mexico Corridor · wMXN ↔ USD₮ (Ripio)',
+      naturalLanguageIntent:
+        'Preserve 2,000 wMXN reserve. Convert excess wMXN into USD₮ with automated policy enforcement.',
+      mode: 'autonomous',
+      executionStrategy: 'taker_rfq',
+      chainId: 42220,
+      sellToken: CELO_VERIFIED_ASSETS.wMXN.address,
+      buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+      minimumReserveAtomic: '2000000000000000000000', // 2,000 wMXN (18 decimals)
+      maxTradeAtomic: '1000000000000000000000', // 1,000 wMXN
+      dailySellCapAtomic: '5000000000000000000000', // 5,000 wMXN
+      minBuyAmountAtomic: '1000000',
+      maxSlippageBps: 100,
+      maxProtocolFeeBps: 25,
+      allowedTargets: [
+        TEXTILE_CONTRACTS.LimitOrderReactor,
+        TEXTILE_CONTRACTS.Permit2,
+      ],
+      serviceSpendPerCallAtomic: '50000',
+      serviceDailyCapAtomic: '500000',
+      stitchBaseSpreadBps: 18,
+      stitchInventorySkewBps: 12,
+      paused: false,
+      updatedAt: now,
+    },
   ];
 
   const defaultAgents: AgentProfileRecord[] = [
@@ -1103,6 +1191,91 @@ export class MoiDatabase {
         updatedAt: now,
       };
       this.state.mandates.push(tenantMandate);
+
+      // LatAm wARS Mandate
+      this.state.mandates.push({
+        id: `mandate_${userId}_wars_usdt`,
+        treasuryId: treasury.id,
+        agentId: `agent_${userId}_fx`,
+        name: `${user.displayName || 'Operator'} · wARS ↔ USD₮ Mandate`,
+        naturalLanguageIntent: 'Preserve 100,000 wARS and convert excess to USD₮.',
+        mode: 'autonomous',
+        executionStrategy: 'passive_stitch_filler',
+        chainId: 42220,
+        sellToken: CELO_VERIFIED_ASSETS.wARS.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        minimumReserveAtomic: '100000000000000000000000',
+        maxTradeAtomic: '50000000000000000000000',
+        dailySellCapAtomic: '250000000000000000000000',
+        minBuyAmountAtomic: '1000000',
+        maxSlippageBps: 100,
+        maxProtocolFeeBps: 25,
+        allowedTargets: [TEXTILE_CONTRACTS.LimitOrderReactor, TEXTILE_CONTRACTS.Permit2],
+        serviceSpendPerCallAtomic: '50000',
+        serviceDailyCapAtomic: '500000',
+        stitchBaseSpreadBps: 18,
+        stitchInventorySkewBps: 15,
+        paused: false,
+        updatedAt: now,
+      });
+
+      // LatAm wBRL Mandate
+      this.state.mandates.push({
+        id: `mandate_${userId}_wbrl_usdt`,
+        treasuryId: treasury.id,
+        agentId: `agent_${userId}_fx`,
+        name: `${user.displayName || 'Operator'} · wBRL ↔ USD₮ Mandate`,
+        naturalLanguageIntent: 'Preserve 1,000 wBRL and convert excess to USD₮.',
+        mode: 'approval_required',
+        executionStrategy: 'taker_rfq',
+        chainId: 42220,
+        sellToken: CELO_VERIFIED_ASSETS.wBRL.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        minimumReserveAtomic: '1000000000000000000000',
+        maxTradeAtomic: '500000000000000000000',
+        dailySellCapAtomic: '2500000000000000000000',
+        minBuyAmountAtomic: '1000000',
+        maxSlippageBps: 100,
+        maxProtocolFeeBps: 25,
+        allowedTargets: [TEXTILE_CONTRACTS.LimitOrderReactor, TEXTILE_CONTRACTS.Permit2],
+        serviceSpendPerCallAtomic: '50000',
+        serviceDailyCapAtomic: '500000',
+        stitchBaseSpreadBps: 16,
+        stitchInventorySkewBps: 10,
+        paused: false,
+        updatedAt: now,
+      });
+
+      // Celo Native CELO Mandate
+      this.state.mandates.push({
+        id: `mandate_${userId}_celo_usdt`,
+        treasuryId: treasury.id,
+        agentId: `agent_${userId}_fx`,
+        name: `${user.displayName || 'Operator'} · CELO ↔ USD₮ Mandate`,
+        naturalLanguageIntent: 'Preserve 10 CELO and convert excess to USD₮.',
+        mode: 'autonomous',
+        executionStrategy: 'taker_rfq',
+        chainId: 42220,
+        sellToken: CELO_VERIFIED_ASSETS.CELO.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        minimumReserveAtomic: '10000000000000000000',
+        maxTradeAtomic: '50000000000000000000',
+        dailySellCapAtomic: '200000000000000000000',
+        minBuyAmountAtomic: '500000',
+        maxSlippageBps: 100,
+        maxProtocolFeeBps: 25,
+        allowedTargets: [
+          TEXTILE_CONTRACTS.LimitOrderReactor,
+          TEXTILE_CONTRACTS.Permit2,
+          '0x5615CDAb10dc425a742d643d949a7F474C01abc4',
+        ],
+        serviceSpendPerCallAtomic: '50000',
+        serviceDailyCapAtomic: '500000',
+        stitchBaseSpreadBps: 20,
+        stitchInventorySkewBps: 15,
+        paused: false,
+        updatedAt: now,
+      });
 
       // Create isolated default agent for this tenant
       const tenantAgent: AgentProfileRecord = {

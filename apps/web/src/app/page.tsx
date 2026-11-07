@@ -121,6 +121,24 @@ export default function MoiAppPage() {
   // Live backend state
   const [loading, setLoading] = useState(true);
   const [treasuryData, setTreasuryData] = useState<any>(null);
+
+  const activeOwnerWallet = (
+    wagmiAddress ||
+    treasuryData?.treasury?.ownerWalletAddress ||
+    treasuryData?.userProfile?.walletAddress ||
+    ''
+  ).toLowerCase();
+
+  const hasConnectedOwnerWallet = Boolean(
+    activeOwnerWallet &&
+      activeOwnerWallet !== '0x0000000000000000000000000000000000000000' &&
+      !activeOwnerWallet.startsWith('0x00000000')
+  );
+
+  const ownerWalletShort = hasConnectedOwnerWallet
+    ? `${activeOwnerWallet.slice(0, 6)}...${activeOwnerWallet.slice(-4)}`
+    : 'Not Connected';
+
   const [buyCatalogData, setBuyCatalogData] = useState<any>(null);
   const [stitchFeedData, setStitchFeedData] = useState<any>(null);
   const [erc8004Data, setErc8004Data] = useState<any>(null);
@@ -323,7 +341,7 @@ export default function MoiAppPage() {
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
 
     try {
-      if (eth && treasuryData?.treasury?.ownerWalletAddress) {
+      if (eth && activeOwnerWallet) {
         // Human owner signed onchain transfer via Web3 browser wallet extension (MetaMask/Rabby/MiniPay)
         let txHash: string;
         if (assetMeta.symbol === 'CELO') {
@@ -331,7 +349,7 @@ export default function MoiAppPage() {
             method: 'eth_sendTransaction',
             params: [
               {
-                from: treasuryData.treasury.ownerWalletAddress,
+                from: activeOwnerWallet,
                 to: sendRecipient,
                 value: '0x' + amountAtomic.toString(16),
               },
@@ -346,7 +364,7 @@ export default function MoiAppPage() {
             method: 'eth_sendTransaction',
             params: [
               {
-                from: treasuryData.treasury.ownerWalletAddress,
+                from: activeOwnerWallet,
                 to: assetMeta.address,
                 data: callData,
               },
@@ -757,7 +775,7 @@ export default function MoiAppPage() {
     if (!showReceiveModal) return;
     const isOwnerTarget = receiveTarget === 'owner';
     const targetAddress = isOwnerTarget
-      ? (treasuryData?.treasury?.ownerWalletAddress || '')
+      ? (activeOwnerWallet || '')
       : (treasuryData?.agentWalletAddress || '');
 
     if (targetAddress && !targetAddress.startsWith('0x00000000')) {
@@ -774,14 +792,14 @@ export default function MoiAppPage() {
   }, [
     showReceiveModal,
     receiveTarget,
-    treasuryData?.treasury?.ownerWalletAddress,
+    activeOwnerWallet,
     treasuryData?.agentWalletAddress,
   ]);
 
   // Dynamic Invoice QR generation
   useEffect(() => {
     if (!showReceiveModal || receiveViewTab !== 'invoice') return;
-    const dest = treasuryData?.treasury?.ownerWalletAddress || '0x479253b82Eb63eb36F140EcABf0237cc338084e7';
+    const dest = activeOwnerWallet || '0x479253b82Eb63eb36F140EcABf0237cc338084e7';
     const invoicePayload = `celo:${dest}?amount=${invoiceAmount}&token=${invoiceToken}&memo=${encodeURIComponent(invoiceRef)}`;
     QRCode.toDataURL(invoicePayload, {
       width: 256,
@@ -796,13 +814,13 @@ export default function MoiAppPage() {
     invoiceAmount,
     invoiceToken,
     invoiceRef,
-    treasuryData?.treasury?.ownerWalletAddress,
+    activeOwnerWallet,
   ]);
 
   // Dynamic QR Code generation for Selected Invoice Modal
   useEffect(() => {
     if (!selectedInvoiceForModal) return;
-    const dest = selectedInvoiceForModal.creatorWallet || treasuryData?.treasury?.ownerWalletAddress || '';
+    const dest = selectedInvoiceForModal.creatorWallet || activeOwnerWallet || '';
     const paymentUri =
       selectedInvoiceForModal.paymentUri ||
       `celo:${dest}?amount=${selectedInvoiceForModal.amount}&token=${selectedInvoiceForModal.tokenSymbol}&memo=${encodeURIComponent(selectedInvoiceForModal.invoiceNumber)}`;
@@ -813,7 +831,7 @@ export default function MoiAppPage() {
     })
       .then((url) => setSelectedInvoiceQrUrl(url))
       .catch((err) => console.error('Invoice QR error:', err));
-  }, [selectedInvoiceForModal, treasuryData?.treasury?.ownerWalletAddress]);
+  }, [selectedInvoiceForModal, activeOwnerWallet]);
 
   // Handler: Create and Cryptographically Sign Invoice ($0 and Zero Gas)
   const handleCreateSignedInvoice = async () => {
@@ -834,7 +852,7 @@ export default function MoiAppPage() {
     setInvoiceSigningLoading(true);
     setInvoiceSigningError(null);
 
-    const connectedWallet = treasuryData?.treasury?.ownerWalletAddress || '';
+    const connectedWallet = activeOwnerWallet || '';
     const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
     const invNumber = invoiceFormRef.trim() || `INV-2026-${Math.floor(100 + Math.random() * 900)}`;
 
@@ -973,7 +991,7 @@ export default function MoiAppPage() {
     wBRL: 5.8,
     wCOP: 4200.0,
     wMXN: 19.5,
-    CELO: 1 / 0.65,
+    CELO: 1 / 0.0685, // Live Celo Mainnet rate (~14.6 CELO per USD)
   };
 
   const FIAT_PREFIXES: Record<string, string> = {
@@ -1000,7 +1018,7 @@ export default function MoiAppPage() {
       const units = Number(formatAtomicUnits(b.balanceAtomic || '0', b.decimals || 18));
       if (units <= 0) continue;
       if (b.symbol === 'CELO') {
-        usdSum += units * 0.65;
+        usdSum += units * 0.0685;
       } else if (b.symbol === 'cNGN') {
         usdSum += units / 1600.0;
       } else if (b.symbol === 'wARS') {
@@ -1043,7 +1061,7 @@ export default function MoiAppPage() {
         usdOnlyValue += units;
       } else {
         const rate = FIAT_RATES[b.symbol] || 1;
-        const valUsd = b.symbol === 'CELO' ? units * 0.65 : units / rate;
+        const valUsd = b.symbol === 'CELO' ? units * 0.0685 : units / rate;
         localOnlyValue += valUsd;
       }
     }
@@ -1715,23 +1733,6 @@ export default function MoiAppPage() {
     a.download = `moi-celo-audit-${Date.now()}.json`;
     a.click();
   };
-
-  const activeOwnerWallet = (
-    wagmiAddress ||
-    treasuryData?.treasury?.ownerWalletAddress ||
-    treasuryData?.userProfile?.walletAddress ||
-    ''
-  ).toLowerCase();
-
-  const hasConnectedOwnerWallet = Boolean(
-    activeOwnerWallet &&
-      activeOwnerWallet !== '0x0000000000000000000000000000000000000000' &&
-      !activeOwnerWallet.startsWith('0x00000000')
-  );
-
-  const ownerWalletShort = hasConnectedOwnerWallet
-    ? `${activeOwnerWallet.slice(0, 6)}...${activeOwnerWallet.slice(-4)}`
-    : 'Not Connected';
 
   const anyMandatePaused = treasuryData?.mandates?.every(
     (m: TreasuryMandate) => m.paused
@@ -5398,19 +5399,14 @@ export default function MoiAppPage() {
                     </p>
                     {hasConnectedOwnerWallet ? (
                       <p className="font-mono-num font-bold text-xs mt-0.5 break-all">
-                        {treasuryData?.treasury?.ownerWalletAddress}
+                        {activeOwnerWallet}
                       </p>
                     ) : (
                       <div className="flex items-center justify-between gap-2 mt-1">
                         <span className="text-xs text-[#0B0F14]/50 italic">
                           No wallet connected yet
                         </span>
-                        <button
-                          onClick={handleOpenSignIn}
-                          className="px-2.5 py-1 rounded-md bg-[#00E676] hover:bg-[#00c968] text-[10px] font-bold text-[#0B0F14] transition shadow-xs"
-                        >
-                          Connect Owner Wallet
-                        </button>
+                        <MoiWalletButton size="sm" />
                       </div>
                     )}
                   </div>
@@ -5732,9 +5728,7 @@ export default function MoiAppPage() {
             </div>
 
             <div className="p-5 space-y-4">
-              {!treasuryData?.treasury?.ownerWalletAddress ||
-              treasuryData.treasury.ownerWalletAddress === '0x0000000000000000000000000000000000000000' ||
-              treasuryData.treasury.ownerWalletAddress.startsWith('0x00000000') ? (
+              {!hasConnectedOwnerWallet ? (
                 /* Disconnected State */
                 <div className="p-6 rounded-2xl bg-[#F8FAFC] border border-[#0B0F14]/10 text-center space-y-4">
                   <div className="w-14 h-14 rounded-full bg-amber-100 border border-amber-200 text-amber-800 flex items-center justify-center mx-auto shadow-xs">
@@ -5899,14 +5893,14 @@ export default function MoiAppPage() {
                     <div className="flex items-center justify-between gap-2 p-2 bg-white rounded-lg border border-[#0B0F14]/8">
                       <span className="font-mono-num text-xs font-semibold text-[#0B0F14] break-all">
                         {receiveTarget === 'owner'
-                          ? treasuryData?.treasury?.ownerWalletAddress
+                          ? activeOwnerWallet
                           : treasuryData?.agentWalletAddress}
                       </span>
                       <button
                         onClick={() => {
                           const addr =
                             receiveTarget === 'owner'
-                              ? treasuryData?.treasury?.ownerWalletAddress
+                              ? activeOwnerWallet
                               : treasuryData?.agentWalletAddress;
                           navigator.clipboard.writeText(addr || '');
                           setReceiveCopied(receiveTarget);
@@ -6030,7 +6024,7 @@ export default function MoiAppPage() {
                             <button
                               type="button"
                               onClick={() => {
-                                const dest = treasuryData?.treasury?.ownerWalletAddress || '';
+                                const dest = activeOwnerWallet || '';
                                 const link = `celo:${dest}?amount=${invoiceAmount}&token=${invoiceToken}&memo=${encodeURIComponent(invoiceRef)}`;
                                 navigator.clipboard.writeText(link);
                                 setInvoiceCopied(true);

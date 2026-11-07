@@ -1,0 +1,162 @@
+{
+  "executedAt": "2026-11-07T14:42:50.858Z",
+  "operator": "0x78b7b043921EE70806c66905E31fc2D9E75455a6",
+  "destinationWallet": "0x479253b82eb63eb36f140ecabf0237cc338084e7",
+  "attributionTag": "celo_c9cb9a59fc4c",
+  "tests": {
+    "sendCelo": {
+      "status": "SUCCESS",
+      "amount": "0.05 CELO",
+      "recipient": "0x479253b82eb63eb36f140ecabf0237cc338084e7",
+      "txHash": "0xd5385e41cd699b6dfbc205c1e7627c822733b2a8c7e33557831937929b8f9833",
+      "celoscanUrl": "https://celoscan.io/tx/0xd5385e41cd699b6dfbc205c1e7627c822733b2a8c7e33557831937929b8f9833",
+      "blockNumber": 82161814
+    },
+    "sendUsdt": {
+      "status": "SUCCESS",
+      "amount": "0.01 USDT",
+      "recipient": "0x479253b82eb63eb36f140ecabf0237cc338084e7",
+      "txHash": "0xcf88a95c20136cf8fbf807776da7f6909c69cdb9eed98900cc937e55b35e6348",
+      "celoscanUrl": "https://celoscan.io/tx/0xcf88a95c20136cf8fbf807776da7f6909c69cdb9eed98900cc937e55b35e6348",
+      "blockNumber": 82161817
+    },
+    "swap": {
+      "status": "SUCCESS",
+      "swappedIn": "0.5 CELO",
+      "tokenOut": "USDT",
+      "txHash": "0x9412294beb7c6753486e06929094a4c45f6bdf66b40e612164b799e6b61a2e7f",
+      "celoscanUrl": "https://celoscan.io/tx/0x9412294beb7c6753486e06929094a4c45f6bdf66b40e612164b799e6b61a2e7f",
+      "blockNumber": 82161819,
+      "attributionVerified": true
+    },
+    "agentCreation": {
+      "agentsCreated": [
+        {
+          "id": "agent_1794062578357_2bdafc",
+          "treasuryId": "treasury_usr_primary_operator",
+          "name": "LatAm Multi-Corridor Rebalancing Agent",
+          "role": "treasury_rebalancer",
+          "description": "Autonomous rebalancing agent balancing wARS, wBRL, and wCOP against USD₮ reserve mandates.",
+          "walletAddress": "0x7a9d56e55Aa0C069118F47aF2ebe675cf0fc1fF6",
+          "erc8004AgentId": 3844,
+          "erc8004Registry": "0x8004A169FB45bb754045cD8Ec3e4598d93eDa432",
+          "active": true,
+          "mandateId": "mandate_1794062578357_2bdafc",
+          "createdAt": "2026-11-07T14:42:58.357Z",
+          "lastCycleAt": "2026-11-07T14:42:58.357Z"
+        },
+        {
+          "id": "agent_1794062578361_617bf9",
+          "treasuryId": "treasury_usr_primary_operator",
+          "name": "Avellaneda-Stoikov Textile Stitch Maker",
+          "role": "stitch_filler",
+          "description": "Dynamic two-sided market maker utilizing high-frequency inventory skew on Celo Mainnet.",
+          "walletAddress": "0x7a9d56e55Aa0C069118F47aF2ebe675cf0fc1fF6",
+          "erc8004AgentId": 9915,
+          "erc8004Registry": "0x8004A169FB45bb754045cD8Ec3e4598d93eDa432",
+          "active": true,
+          "mandateId": "mandate_1794062578361_617bf9",
+          "createdAt": "2026-11-07T14:42:58.361Z",
+          "lastCycleAt": "2026-11-07T14:42:58.361Z"
+        }
+      ],
+      "mandatesCreated": [
+        {
+          "id": "mandate_1794062578357_2bdafc",
+          "treasuryId": "treasury_usr_primary_operator",
+          "agentId": "agent_1794062578357_2bdafc",
+          "name": "LatAm Multi-Corridor Rebalancing Agent Mandate",
+          "mode": "autonomous",
+          "executionStrategy": "taker_rfq",
+          "chainId": 42220,
+          "sellToken": "0x0DC4F92879B7670e5f4e4e6e3c801D229129D90D",
+          "buyToken": "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+          "minimumReserveAtomic": "100000000000000000000000",
+          "maxTradeAtomic": "50000000000000000000000",
+          "dailySellCapAtomic": "250000000000000000000000",
+          "maxSlippageBps": 100,
+          "maxProtocolFeeBps": 25,
+          "allowedTargets": [
+            "0xa9AA5e845c48b26118D6d40C8885f69F65B235b3",
+            "0x0DC4F92879B7670e5f4e4e6e3c801D229129D90D",
+            "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e"
+          ],
+          "serviceSpendPerCallAtomic": "50000",
+          "serviceDailyCapAtomic": "500000",
+          "stitchBaseSpreadBps": 18,
+          "stitchInventorySkewBps": 12,
+          "paused": false,
+          "naturalLanguageIntent": "Rebalance Argentine peso liquidity pool whenever drift exceeds 5%.",
+          "updatedAt": "2026-11-07T14:42:58.357Z"
+        },
+        {
+          "id": "mandate_1794062578361_617bf9",
+          "treasuryId": "treasury_usr_primary_operator",
+          "agentId": "agent_1794062578361_617bf9",
+          "name": "Avellaneda-Stoikov Textile Stitch Maker Mandate",
+          "mode": "autonomous",
+          "executionStrategy": "taker_rfq",
+          "chainId": 42220,
+          "sellToken": "0xF6829D7393dAe24509eb1E52eE8e572e2E271a4f",
+          "buyToken": "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+          "minimumReserveAtomic": "50000000000",
+          "maxTradeAtomic": "25000000000",
+          "dailySellCapAtomic": "100000000000",
+          "maxSlippageBps": 50,
+          "maxProtocolFeeBps": 25,
+          "allowedTargets": [
+            "0xa9AA5e845c48b26118D6d40C8885f69F65B235b3",
+            "0xF6829D7393dAe24509eb1E52eE8e572e2E271a4f",
+            "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e"
+          ],
+          "serviceSpendPerCallAtomic": "50000",
+          "serviceDailyCapAtomic": "500000",
+          "stitchBaseSpreadBps": 18,
+          "stitchInventorySkewBps": 12,
+          "paused": false,
+          "naturalLanguageIntent": "Quote two-sided liquidity around mid-price with 18 bps spread.",
+          "updatedAt": "2026-11-07T14:42:58.361Z"
+        }
+      ],
+      "status": "SUCCESS"
+    },
+    "x402Purchase": {
+      "purchaseRecord": {
+        "id": "srv_purch_1794062578362",
+        "treasuryId": "treasury_main",
+        "agentId": "agent_x402_research",
+        "capabilityId": "cap_textile_volatility_oracle_v2",
+        "providerName": "Textile FX Real-Time Volatility Feed",
+        "endpointUrl": "https://api.usebuy.ai/celo/v1/volatility",
+        "paymentTokenSymbol": "USAT",
+        "paymentTokenAddress": "0xD2ab3C9A02DBBAB236BfEC45D1d755DF4267F771",
+        "priceUsd": "0.005",
+        "amountAtomic": "5000",
+        "status": "PAID_AND_VERIFIED",
+        "paymentTxHash": "0x8f5bc7a006d1275278f2e3f6bcb0db8d243b6c2abf14aec6c9e9f49ecb7d39bd",
+        "payToAddress": "0xa9AA0a64769cBed4d3B1Ceb4Df01CdE915C235b3",
+        "erc8004ProviderAgentId": 8004,
+        "requestSummary": "Query volatility surface for cNGN/USDT & wARS/USDT",
+        "responseSummary": "Volatility Sigma: 0.248 · Order Intensity Kappa: 1.52 · Recommended Spread: 18 bps",
+        "createdAt": "2026-11-07T14:42:58.362Z"
+      },
+      "status": "SUCCESS"
+    },
+    "rebalancing": {
+      "totalUsdValue": 1.9755540462260877,
+      "actualUsdPct": 11,
+      "targetUsdPct": 70,
+      "drift": -59,
+      "decision": "TRIGGER_REBALANCE",
+      "status": "SUCCESS"
+    },
+    "invoicing": {
+      "invoiceId": "inv_1794062578912_382",
+      "invoiceNumber": "INV-LIVE-578907",
+      "client": "Mercado Libre Partner Network",
+      "amount": "250000.00 wARS",
+      "signature": "0xdfd8e4e61081e45e26b7cfb9e30c0909336a1cdb11a2c5d7d5099c68866c5667350f790bf1d1f3aff2dc0b0672af795251c102b48766257a48e15bf3197d72ac1c",
+      "status": "SUCCESS"
+    }
+  }
+}
