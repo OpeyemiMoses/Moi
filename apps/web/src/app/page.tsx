@@ -258,6 +258,15 @@ export default function MoiAppPage() {
   const [selectedInvoiceQrUrl, setSelectedInvoiceQrUrl] = useState<string>('');
   const [invoiceCopiedId, setInvoiceCopiedId] = useState<string | null>(null);
 
+  // Invoice Deletion & Alert Modals
+  const [invoiceToDelete, setInvoiceToDelete] = useState<any | null>(null);
+  const [isDeletingInvoice, setIsDeletingInvoice] = useState(false);
+  const [feedbackModal, setFeedbackModal] = useState<{
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  } | null>(null);
+
   // Receive Modal: Tab switch between Deposit Address & Payment Request
   const [receiveViewTab, setReceiveViewTab] = useState<'address' | 'invoice'>('address');
   const [invoiceClientName, setInvoiceClientName] = useState('Acme Corp');
@@ -1209,27 +1218,44 @@ export default function MoiAppPage() {
     }
   };
 
-  // Handler: Delete Invoice
-  const handleDeleteInvoice = async (invoiceId: string) => {
-    if (!confirm('Are you sure you want to permanently delete this invoice?')) return;
+  // Handler: Delete Invoice via In-App Confirmation Modal
+  const confirmDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    setIsDeletingInvoice(true);
     try {
       const res = await fetch('/api/treasury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'delete_invoice',
-          invoiceId,
+          invoiceId: invoiceToDelete.id,
+          walletAddress: activeOwnerWallet,
         }),
       });
       const data = await res.json();
-      if (data.ok) {
-        if (selectedInvoiceForModal && selectedInvoiceForModal.id === invoiceId) {
-          setSelectedInvoiceForModal(null);
-        }
-        await fetchAllData();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Failed to delete invoice.');
       }
-    } catch (err) {
-      console.error('Failed to delete invoice:', err);
+      if (selectedInvoiceForModal && selectedInvoiceForModal.id === invoiceToDelete.id) {
+        setSelectedInvoiceForModal(null);
+      }
+      const invNum = invoiceToDelete.invoiceNumber || invoiceToDelete.id;
+      setInvoiceToDelete(null);
+      await fetchAllData(activeOwnerWallet);
+      setFeedbackModal({
+        type: 'success',
+        title: 'Invoice Deleted',
+        message: `Invoice ${invNum} has been permanently deleted from the treasury database and audit ledger.`,
+      });
+    } catch (err: any) {
+      setInvoiceToDelete(null);
+      setFeedbackModal({
+        type: 'error',
+        title: 'Deletion Failed',
+        message: err?.message || 'Unable to delete invoice. Please try again.',
+      });
+    } finally {
+      setIsDeletingInvoice(false);
     }
   };
 
@@ -4879,7 +4905,7 @@ export default function MoiAppPage() {
                               )}
                               <button
                                 type="button"
-                                onClick={() => handleDeleteInvoice(inv.id)}
+                                onClick={() => setInvoiceToDelete(inv)}
                                 className="p-1 rounded-md border border-red-200 hover:bg-red-50 text-red-500 hover:text-red-700 transition cursor-pointer"
                                 title="Delete invoice"
                               >
@@ -7202,7 +7228,7 @@ export default function MoiAppPage() {
 
                 <button
                   type="button"
-                  onClick={() => handleDeleteInvoice(selectedInvoiceForModal.id)}
+                  onClick={() => setInvoiceToDelete(selectedInvoiceForModal)}
                   className="w-full py-2 rounded-xl border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -7210,6 +7236,111 @@ export default function MoiAppPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          INVOICE DELETION CONFIRMATION MODAL (Replaces Browser Alerts)
+         ===================================================================== */}
+      {invoiceToDelete && (
+        <div className="fixed inset-0 z-50 bg-[#0B0F14]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-red-100 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#0B0F14]">Delete Invoice?</h3>
+                <p className="text-xs text-[#0B0F14]/60">Permanent database action</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-[#0B0F14]/75 mb-4 leading-relaxed">
+              Are you sure you want to permanently delete invoice{' '}
+              <span className="font-bold text-[#0B0F14]">{invoiceToDelete.invoiceNumber}</span> for{' '}
+              <span className="font-bold text-[#0B0F14]">{invoiceToDelete.clientName}</span>? This action cannot be undone.
+            </p>
+
+            <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/8 space-y-1.5 text-xs mb-4">
+              <div className="flex justify-between">
+                <span className="text-[#0B0F14]/60">Amount:</span>
+                <span className="font-mono font-bold text-[#0B0F14]">{invoiceToDelete.amount} {invoiceToDelete.tokenSymbol}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#0B0F14]/60">Client:</span>
+                <span className="font-semibold text-[#0B0F14] truncate max-w-[180px]">{invoiceToDelete.clientName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#0B0F14]/60">Status:</span>
+                <span className="font-bold text-[10px] uppercase px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">{invoiceToDelete.status}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setInvoiceToDelete(null)}
+                disabled={isDeletingInvoice}
+                className="flex-1 py-2.5 rounded-xl border border-[#0B0F14]/15 hover:bg-slate-50 text-xs font-semibold text-[#0B0F14] transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteInvoice}
+                disabled={isDeletingInvoice}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                {isDeletingInvoice ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          IN-APP FEEDBACK / ALERT MODAL (Replaces Browser Alert / Confirm)
+         ===================================================================== */}
+      {feedbackModal && (
+        <div className="fixed inset-0 z-50 bg-[#0B0F14]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-[#0B0F14]/10 animate-in fade-in zoom-in-95 duration-200 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3.5">
+              {feedbackModal.type === 'success' ? (
+                <div className="w-12 h-12 rounded-full bg-[#B6F7D2]/70 text-[#087F5B] flex items-center justify-center">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+              ) : feedbackModal.type === 'error' ? (
+                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                  <BadgeCheck className="w-6 h-6" />
+                </div>
+              )}
+            </div>
+
+            <h3 className="text-base font-bold text-[#0B0F14] mb-1.5">{feedbackModal.title}</h3>
+            <p className="text-xs text-[#0B0F14]/70 mb-5 leading-relaxed">{feedbackModal.message}</p>
+
+            <button
+              type="button"
+              onClick={() => setFeedbackModal(null)}
+              className="w-full py-2.5 rounded-xl bg-[#0B0F14] hover:bg-[#1E293B] text-white text-xs font-bold transition cursor-pointer shadow-xs"
+            >
+              Okay, Understood
+            </button>
           </div>
         </div>
       )}

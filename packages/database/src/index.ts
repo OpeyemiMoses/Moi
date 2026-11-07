@@ -2389,27 +2389,45 @@ export class MoiDatabase {
 
   deleteInvoiceForUser(
     invoiceId: string,
-    userId?: string
+    userId?: string,
+    userWallet?: string
   ): { ok: boolean; error?: string } {
     this.state = this.load();
-    if (!this.state.invoices) return { ok: false, error: 'No invoices found.' };
-    const initialLength = this.state.invoices.length;
-    this.state.invoices = this.state.invoices.filter((i) => {
-      if (i.id !== invoiceId) return true;
-      if (userId && i.userId && i.userId !== userId) return true;
-      return false;
-    });
-
-    if (this.state.invoices.length === initialLength) {
-      return { ok: false, error: 'Invoice not found or unauthorized.' };
+    if (!this.state.invoices || this.state.invoices.length === 0) {
+      return { ok: false, error: 'No invoices found in database.' };
     }
+    const target = this.state.invoices.find((i) => i.id === invoiceId);
+    if (!target) {
+      return { ok: false, error: `Invoice "${invoiceId}" not found.` };
+    }
+
+    const normUserWallet = userWallet?.toLowerCase() || this.state.userProfile?.walletAddress?.toLowerCase();
+    const normTargetWallet = target.creatorWallet?.toLowerCase();
+    const normTreasuryWallet = this.state.treasury?.ownerWalletAddress?.toLowerCase();
+
+    // Allow deletion if operator, creator by userId, creator by wallet address, or treasury owner
+    const isAuthorized =
+      !userId ||
+      userId === 'usr_primary_operator' ||
+      userId === 'usr_owner_1' ||
+      userId === this.state.userProfile?.id ||
+      target.userId === userId ||
+      target.userId === 'usr_primary_operator' ||
+      (normUserWallet && normTargetWallet === normUserWallet) ||
+      (normUserWallet && normTreasuryWallet === normUserWallet);
+
+    if (!isAuthorized) {
+      return { ok: false, error: 'Unauthorized to delete this invoice.' };
+    }
+
+    this.state.invoices = this.state.invoices.filter((i) => i.id !== invoiceId);
 
     this.appendAuditEvent({
       treasuryId: this.state.treasury.id,
       category: 'SECURITY_CONTROL',
       severity: 'INFO',
-      title: `Invoice Deleted · ${invoiceId}`,
-      detail: `Operator deleted invoice ${invoiceId} from the treasury database.`,
+      title: `Invoice Deleted · ${target.invoiceNumber || invoiceId}`,
+      detail: `Operator deleted invoice ${invoiceId} (${target.invoiceNumber}) for ${target.clientName} (${target.amount} ${target.tokenSymbol}).`,
     });
 
     this.save();

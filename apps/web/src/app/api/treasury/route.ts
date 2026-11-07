@@ -647,14 +647,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'delete_invoice') {
-      const { invoiceId } = body;
+      const { invoiceId, walletAddress } = body;
       if (!invoiceId) {
         return NextResponse.json(
           { error: 'Missing invoiceId.' },
           { status: 400 }
         );
       }
-      const result = moiDb.deleteInvoiceForUser(invoiceId, tenantUserId);
+      const userWallet = (walletAddress || (auth.authenticated && auth.user?.walletAddress) || moiDb.getState().userProfile?.walletAddress) as string | undefined;
+      const result = moiDb.deleteInvoiceForUser(invoiceId, tenantUserId, userWallet);
       if (!result.ok) {
         return NextResponse.json({ error: result.error || 'Failed to delete invoice' }, { status: 400 });
       }
