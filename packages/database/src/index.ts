@@ -1306,6 +1306,145 @@ export class MoiDatabase {
     return treasury;
   }
 
+  ensureCorridorMandatesForTreasury(treasuryId: string, userId: string): TreasuryMandate[] {
+    const existing = this.state.mandates.filter((m) => m.treasuryId === treasuryId);
+    const existingSellTokens = new Set(existing.map((m) => `${m.sellToken.toLowerCase()}_${m.buyToken.toLowerCase()}`));
+
+    const corePairs = [
+      {
+        idSuffix: 'celo_usdt',
+        name: 'Celo Native Treasury · CELO ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.CELO.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Maintain reserve of 10 CELO for gas. Convert excess CELO into USD₮ on Uniswap v3 / Textile.',
+        minReserve: '10000000000000000000',
+        maxTrade: '50000000000000000000',
+        dailyCap: '200000000000000000000',
+        mode: 'autonomous' as const,
+        strategy: 'taker_rfq' as const,
+      },
+      {
+        idSuffix: 'cngn_usdt',
+        name: 'Nigeria Operating Treasury · cNGN ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.cNGN.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Preserve 50,000 cNGN reserve and convert excess into USD₮.',
+        minReserve: '50000000000',
+        maxTrade: '25000000000',
+        dailyCap: '100000000000',
+        mode: 'approval_required' as const,
+        strategy: 'hybrid' as const,
+      },
+      {
+        idSuffix: 'wars_usdt',
+        name: 'LatAm Ripio Corridor · wARS ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.wARS.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Preserve 100,000 wARS and convert excess into USD₮ via Ripio rail.',
+        minReserve: '100000000000000000000000',
+        maxTrade: '50000000000000000000000',
+        dailyCap: '250000000000000000000000',
+        mode: 'autonomous' as const,
+        strategy: 'passive_stitch_filler' as const,
+      },
+      {
+        idSuffix: 'wbrl_usdt',
+        name: 'Brazil Merchant Corridor · wBRL ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.wBRL.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Preserve 1,000 wBRL and convert excess into USD₮ via Ripio rail.',
+        minReserve: '1000000000000000000000',
+        maxTrade: '500000000000000000000',
+        dailyCap: '2500000000000000000000',
+        mode: 'approval_required' as const,
+        strategy: 'taker_rfq' as const,
+      },
+      {
+        idSuffix: 'wcop_usdt',
+        name: 'Colombia Corridor · wCOP ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.wCOP.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Preserve 500,000 wCOP reserve and convert excess into USD₮ via Ripio rail.',
+        minReserve: '500000000000000000000000',
+        maxTrade: '250000000000000000000000',
+        dailyCap: '1000000000000000000000000',
+        mode: 'autonomous' as const,
+        strategy: 'taker_rfq' as const,
+      },
+      {
+        idSuffix: 'wmxn_usdt',
+        name: 'Mexico Corridor · wMXN ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.wMXN.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Preserve 2,000 wMXN reserve and convert excess into USD₮ via Ripio rail.',
+        minReserve: '2000000000000000000000',
+        maxTrade: '1000000000000000000000',
+        dailyCap: '5000000000000000000000',
+        mode: 'autonomous' as const,
+        strategy: 'taker_rfq' as const,
+      },
+      {
+        idSuffix: 'usdc_usdt',
+        name: 'Global Stable Interchange · USDC ↔ USD₮',
+        sellToken: CELO_VERIFIED_ASSETS.USDC.address,
+        buyToken: CELO_VERIFIED_ASSETS.USDT.address,
+        intent: 'Exchange USDC for USD₮ at parity with minimal slippage.',
+        minReserve: '10000000',
+        maxTrade: '1000000000',
+        dailyCap: '5000000000',
+        mode: 'autonomous' as const,
+        strategy: 'taker_rfq' as const,
+      },
+    ];
+
+    let hasAdded = false;
+    const now = new Date().toISOString();
+
+    for (const p of corePairs) {
+      const pairKey = `${p.sellToken.toLowerCase()}_${p.buyToken.toLowerCase()}`;
+      if (!existingSellTokens.has(pairKey)) {
+        const newM: TreasuryMandate = {
+          id: `mandate_${treasuryId}_${p.idSuffix}`,
+          treasuryId: treasuryId,
+          agentId: `agent_${userId}_fx`,
+          name: p.name,
+          naturalLanguageIntent: p.intent,
+          mode: p.mode,
+          executionStrategy: p.strategy,
+          chainId: 42220,
+          sellToken: p.sellToken,
+          buyToken: p.buyToken,
+          minimumReserveAtomic: p.minReserve,
+          maxTradeAtomic: p.maxTrade,
+          dailySellCapAtomic: p.dailyCap,
+          minBuyAmountAtomic: '500000',
+          maxSlippageBps: 100,
+          maxProtocolFeeBps: 25,
+          allowedTargets: [
+            TEXTILE_CONTRACTS.LimitOrderReactor,
+            TEXTILE_CONTRACTS.Permit2,
+            '0x5615CDAb10dc425a742d643d949a7F474C01abc4',
+          ],
+          serviceSpendPerCallAtomic: '50000',
+          serviceDailyCapAtomic: '500000',
+          stitchBaseSpreadBps: 18,
+          stitchInventorySkewBps: 12,
+          paused: false,
+          updatedAt: now,
+        };
+        this.state.mandates.push(newM);
+        existing.push(newM);
+        hasAdded = true;
+      }
+    }
+
+    if (hasAdded) {
+      this.save();
+    }
+
+    return existing;
+  }
+
   getTenantState(userId: string) {
     this.state = this.load();
     const user = this.getUserById(userId) || this.state.userProfile;
@@ -1314,11 +1453,13 @@ export class MoiDatabase {
       user?.walletAddress as `0x${string}`
     );
 
+    const userMandates = this.ensureCorridorMandatesForTreasury(treasury.id, userId);
+
     return {
       userProfile: user,
       treasury,
       agents: this.state.agents.filter((a) => a.treasuryId === treasury.id),
-      mandates: this.state.mandates.filter((m) => m.treasuryId === treasury.id),
+      mandates: userMandates,
       executions: this.state.executions.filter(
         (e) => e.treasuryId === treasury.id
       ),

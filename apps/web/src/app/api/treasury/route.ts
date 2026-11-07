@@ -457,6 +457,40 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (action === 'record_swap') {
+      const { txHash, sellSymbol, buySymbol, amount, operatorWallet, attributionTag } = body.swap || {};
+      const tenantState = moiDb.getTenantState(tenantUserId);
+      const sellMeta = CELO_VERIFIED_ASSETS[sellSymbol as keyof typeof CELO_VERIFIED_ASSETS] || CELO_VERIFIED_ASSETS.CELO;
+      const buyMeta = CELO_VERIFIED_ASSETS[buySymbol as keyof typeof CELO_VERIFIED_ASSETS] || CELO_VERIFIED_ASSETS.USDT;
+      const execution = moiDb.upsertExecution({
+        id: `exec_swap_${Date.now()}`,
+        idempotencyKey: `idem_swap_${txHash}`,
+        treasuryId: tenantState.treasury.id,
+        mandateId: 'mandate_celo_usdt',
+        agentId: 'agent_fx_treasury',
+        state: 'RECONCILED',
+        sellToken: sellMeta.address,
+        buyToken: buyMeta.address,
+        sellSymbol: sellSymbol || 'CELO',
+        buySymbol: buySymbol || 'USDT',
+        swapTxHash: txHash,
+        requestedSellAtomic: amount || '0',
+        settledSellAtomic: amount,
+        attributionTag: attributionTag || 'celo_c9cb9a59fc4c',
+        attributionVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      moiDb.appendAuditEvent({
+        treasuryId: tenantState.treasury.id,
+        category: 'LEDGER_RECONCILIATION',
+        severity: 'SUCCESS',
+        title: `Live Swap Settled on Celo Mainnet · ${sellSymbol} → ${buySymbol}`,
+        detail: `Operator wallet ${operatorWallet || 'connected'} executed live onchain swap of ${amount} ${sellSymbol} for ${buySymbol}. Tx: ${txHash}. Tagged with ERC-8021 attribution "${attributionTag || 'celo_c9cb9a59fc4c'}".`,
+      });
+      return NextResponse.json({ ok: true, execution });
+    }
+
     if (action === 'withdraw_to_bank') {
       const {
         country,

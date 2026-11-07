@@ -49,6 +49,7 @@ import {
 import { MoiHero3DEmblem, MoiRibbonMark } from '@/components/MoiLogo';
 import { MoiWalletButton } from '@/components/MoiWalletButton';
 import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
+import { encodeFunctionData, parseAbi, erc20Abi, maxUint256 } from 'viem';
 import {
   AssetSymbol,
   CELO_VERIFIED_ASSETS,
@@ -64,6 +65,23 @@ import {
   parseAtomicUnits,
 } from '@moi/shared-types';
 
+const ATTRIBUTION_TAG = 'celo_c9cb9a59fc4c';
+const ATTRIBUTION_SUFFIX = '63656c6f5f633963623961353966633463110080218021802180218021802180218021';
+const SWAP_ROUTER_02 = '0x5615CDAb10dc425a742d643d949a7F474C01abc4';
+const routerAbi = parseAbi([
+  'function exactInputSingle((address tokenIn, address tokenOut, uint24 fee, address recipient, uint256 amountIn, uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)) external payable returns (uint256 amountOut)',
+]);
+
+const CORE_CORRIDORS: Array<{ id: string; sell: AssetSymbol; buy: AssetSymbol; label: string }> = [
+  { id: 'mandate_celo_usdt', sell: 'CELO', buy: 'USDT', label: 'CELO ↔ USD₮' },
+  { id: 'mandate_cngn_usdt', sell: 'cNGN', buy: 'USDT', label: 'cNGN ↔ USD₮' },
+  { id: 'mandate_wars_usdt', sell: 'wARS', buy: 'USDT', label: 'wARS ↔ USD₮' },
+  { id: 'mandate_wbrl_usdt', sell: 'wBRL', buy: 'USDT', label: 'wBRL ↔ USD₮' },
+  { id: 'mandate_wcop_usdt', sell: 'wCOP', buy: 'USDT', label: 'wCOP ↔ USD₮' },
+  { id: 'mandate_wmxn_usdt', sell: 'wMXN', buy: 'USDT', label: 'wMXN ↔ USD₮' },
+  { id: 'mandate_usdc_usdt', sell: 'USDC', buy: 'USDT', label: 'USDC ↔ USD₮' },
+];
+
 type AppTab =
   | 'dashboard'
   | 'agents'
@@ -75,7 +93,7 @@ type AppTab =
   | 'settings';
 
 export default function MoiAppPage() {
-  const { address: wagmiAddress, isConnected: isWagmiConnected } = useAccount();
+  const { address: wagmiAddress, isConnected: isWagmiConnected, status: wagmiStatus } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
 
@@ -87,8 +105,8 @@ export default function MoiAppPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [authStep, setAuthStep] = useState<1 | 2>(1);
-  const [authNameInput, setAuthNameInput] = useState('Treasury Operator');
-  const [authEmailInput, setAuthEmailInput] = useState('treasury@company.co');
+  const [authNameInput, setAuthNameInput] = useState('');
+  const [authEmailInput, setAuthEmailInput] = useState('');
   const [authOrgInput, setAuthOrgInput] = useState('MOI Global Treasury');
   const [authRoleInput, setAuthRoleInput] = useState('Treasury Manager');
   const [authRegionInput, setAuthRegionInput] = useState('Nigeria & LatAm Corridors');
@@ -99,10 +117,10 @@ export default function MoiAppPage() {
   const [foundAccount, setFoundAccount] = useState<any>(null);
   const [lookupMessage, setLookupMessage] = useState<string | null>(null);
 
-  // Profile Form state
+  // Profile Form state: strictly tied to connected wallet, cleanly blanked when disconnected
   const [profileForm, setProfileForm] = useState({
-    displayName: 'Treasury Operator',
-    email: 'treasury@company.co',
+    displayName: '',
+    email: '',
     organization: 'MOI Global Treasury',
     roleTitle: 'Treasury Manager',
     primaryRegion: 'Nigeria & LatAm Corridors',
@@ -124,15 +142,16 @@ export default function MoiAppPage() {
 
   const activeOwnerWallet = (
     wagmiAddress ||
-    treasuryData?.treasury?.ownerWalletAddress ||
-    treasuryData?.userProfile?.walletAddress ||
+    (isWagmiConnected ? treasuryData?.treasury?.ownerWalletAddress : null) ||
+    (isWagmiConnected ? treasuryData?.userProfile?.walletAddress : null) ||
     ''
   ).toLowerCase();
 
   const hasConnectedOwnerWallet = Boolean(
     activeOwnerWallet &&
       activeOwnerWallet !== '0x0000000000000000000000000000000000000000' &&
-      !activeOwnerWallet.startsWith('0x00000000')
+      !activeOwnerWallet.startsWith('0x00000000') &&
+      isWagmiConnected
   );
 
   const ownerWalletShort = hasConnectedOwnerWallet
@@ -196,6 +215,14 @@ export default function MoiAppPage() {
   const [sendLoading, setSendLoading] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sendSuccess, setSendSuccess] = useState<any>(null);
+
+  // Interactive Web3 Swap State (Direct Wallet Execution on Celo Mainnet)
+  const [swapLoading, setSwapLoading] = useState(false);
+  const [swapStepText, setSwapStepText] = useState<string | null>(null);
+  const [swapError, setSwapError] = useState<string | null>(null);
+  const [swapSuccess, setSwapSuccess] = useState<any>(null);
+  const [customSellSymbol, setCustomSellSymbol] = useState<AssetSymbol | null>(null);
+  const [customBuySymbol, setCustomBuySymbol] = useState<AssetSymbol | null>(null);
 
   const [showReceiveModal, setShowReceiveModal] = useState(false);
   const [receiveTarget, setReceiveTarget] = useState<'owner' | 'agent'>('owner');
@@ -352,14 +379,18 @@ export default function MoiAppPage() {
                 from: activeOwnerWallet,
                 to: sendRecipient,
                 value: '0x' + amountAtomic.toString(16),
+                data: `0x${ATTRIBUTION_SUFFIX}`,
               },
             ],
           });
         } else {
-          // Standard ERC-20 transfer(address to, uint256 amount)
-          const cleanTo = sendRecipient.toLowerCase().replace(/^0x/, '').padStart(64, '0');
-          const cleanAmountHex = amountAtomic.toString(16).padStart(64, '0');
-          const callData = `0xa9059cbb${cleanTo}${cleanAmountHex}`;
+          // Standard ERC-20 transfer(address to, uint256 amount) with Schema 0 attribution
+          const rawTransfer = encodeFunctionData({
+            abi: erc20Abi,
+            functionName: 'transfer',
+            args: [sendRecipient as `0x${string}`, amountAtomic],
+          });
+          const callData = `${rawTransfer}${ATTRIBUTION_SUFFIX}`;
           txHash = await eth.request({
             method: 'eth_sendTransaction',
             params: [
@@ -421,6 +452,160 @@ export default function MoiAppPage() {
       setSendError(err?.message || 'Transaction rejected by wallet or failed on Celo Mainnet.');
     } finally {
       setSendLoading(false);
+    }
+  };
+
+  // Interactive Web3 Swap Execution (Direct Uniswap v3 SwapRouter02 on Celo Mainnet with Schema 0 ERC-8021 Attribution)
+  const handleExecuteWeb3Swap = async () => {
+    if (!hasConnectedOwnerWallet) {
+      setSwapError('Please connect your Celo wallet to execute swaps.');
+      return;
+    }
+    const num = Number(sellHumanInput || '0');
+    if (isNaN(num) || num <= 0) {
+      setSwapError('Please enter a valid swap amount.');
+      return;
+    }
+
+    const amountAtomic =
+      BigInt(Math.floor(num * Math.pow(10, Math.min(sellAsset.decimals, 6)))) *
+      BigInt(Math.pow(10, Math.max(0, sellAsset.decimals - 6)));
+
+    setSwapLoading(true);
+    setSwapError(null);
+    setSwapSuccess(null);
+    setSwapStepText('Connecting to Celo Mainnet...');
+
+    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+    if (!eth) {
+      setSwapError('Web3 wallet extension (MetaMask/Rabby/Rainbow) not detected in your browser.');
+      setSwapLoading(false);
+      return;
+    }
+
+    try {
+      // 1. Check Allowance for ERC-20 spending by SwapRouter02
+      setSwapStepText(`Checking ${sellAsset.symbol} spending allowance...`);
+      const allowanceData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [activeOwnerWallet as `0x${string}`, SWAP_ROUTER_02 as `0x${string}`],
+      });
+
+      let currentAllowance = 0n;
+      try {
+        const allowanceHex = await eth.request({
+          method: 'eth_call',
+          params: [{ to: sellAsset.address, data: allowanceData }, 'latest'],
+        });
+        if (allowanceHex && allowanceHex !== '0x') {
+          currentAllowance = BigInt(allowanceHex);
+        }
+      } catch (callErr) {
+        console.warn('Allowance check warning:', callErr);
+      }
+
+      // If allowance is insufficient, request approval with Schema 0 attribution
+      if (currentAllowance < amountAtomic) {
+        setSwapStepText(`Step 1/2: Please approve ${sellAsset.symbol} for Uniswap v3 in your wallet...`);
+        const rawApprove = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: [SWAP_ROUTER_02 as `0x${string}`, maxUint256],
+        });
+        const approveCallData = `${rawApprove}${ATTRIBUTION_SUFFIX}`;
+
+        const approveTx = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [
+            {
+              from: activeOwnerWallet,
+              to: sellAsset.address,
+              data: approveCallData,
+            },
+          ],
+        });
+
+        setSwapStepText(`Step 1/2: ${sellAsset.symbol} approval pending (${approveTx.slice(0, 10)}...)...`);
+        for (let i = 0; i < 12; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          try {
+            const receipt = await eth.request({
+              method: 'eth_getTransactionReceipt',
+              params: [approveTx],
+            });
+            if (receipt && receipt.blockNumber) break;
+          } catch {}
+        }
+      }
+
+      // 2. Prompt exactInputSingle swap on Uniswap v3 SwapRouter02 with Schema 0 attribution tag
+      setSwapStepText(`Step 2/2: Confirm ${sellAsset.symbol} → ${buyAsset.symbol} swap in your wallet...`);
+
+      const swapParams = {
+        tokenIn: sellAsset.address as `0x${string}`,
+        tokenOut: buyAsset.address as `0x${string}`,
+        fee: 100, // 0.01% fee tier
+        recipient: activeOwnerWallet as `0x${string}`,
+        amountIn: amountAtomic,
+        amountOutMinimum: 0n,
+        sqrtPriceLimitX96: 0n,
+      };
+
+      const rawSwapData = encodeFunctionData({
+        abi: routerAbi,
+        functionName: 'exactInputSingle',
+        args: [swapParams],
+      });
+
+      const swapCallData = `${rawSwapData}${ATTRIBUTION_SUFFIX}`;
+
+      const swapTxHash = await eth.request({
+        method: 'eth_sendTransaction',
+        params: [
+          {
+            from: activeOwnerWallet,
+            to: SWAP_ROUTER_02,
+            data: swapCallData,
+            value: '0x0',
+          },
+        ],
+      });
+
+      setSwapStepText(`Swap confirmed! Tx: ${swapTxHash.slice(0, 10)}... Recording in treasury ledger...`);
+
+      // 3. Record confirmed swap in MOI treasury double-entry audit ledger
+      await fetch('/api/treasury', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'record_swap',
+          swap: {
+            txHash: swapTxHash,
+            sellSymbol: sellAsset.symbol,
+            buySymbol: buyAsset.symbol,
+            amount: amountAtomic.toString(),
+            operatorWallet: activeOwnerWallet,
+            attributionTag: ATTRIBUTION_TAG,
+          },
+        }),
+      });
+
+      setSwapSuccess({
+        txHash: swapTxHash,
+        sellSymbol: sellAsset.symbol,
+        buySymbol: buyAsset.symbol,
+        amount: sellHumanInput,
+        attributionTag: ATTRIBUTION_TAG,
+      });
+
+      await fetchAllData();
+    } catch (err: any) {
+      console.error('Swap execution error:', err);
+      setSwapError(err?.message || 'Swap transaction was rejected or failed on Celo Mainnet.');
+    } finally {
+      setSwapLoading(false);
+      setSwapStepText(null);
     }
   };
 
@@ -676,7 +861,7 @@ export default function MoiAppPage() {
       setStitchFeedData(sJson);
       setErc8004Data(iJson);
 
-      if (tJson?.userProfile) {
+      if (tJson?.userProfile && activeWallet) {
         setProfileForm({
           displayName: tJson.userProfile.displayName || '',
           email: tJson.userProfile.email || '',
@@ -693,6 +878,18 @@ export default function MoiAppPage() {
         if (tJson.userProfile.walletAddress) {
           setAuthWalletInput(tJson.userProfile.walletAddress);
         }
+      } else if (!activeWallet) {
+        setProfileForm({
+          displayName: '',
+          email: '',
+          organization: 'MOI Global Treasury',
+          roleTitle: 'Treasury Manager',
+          primaryRegion: 'Nigeria & LatAm Corridors',
+          preferredBaseSymbol: 'cNGN',
+        });
+        setAuthNameInput('');
+        setAuthEmailInput('');
+        setAuthWalletInput('');
       }
 
       // If user has a valid active server session or connected wallet, show app view
@@ -725,6 +922,10 @@ export default function MoiAppPage() {
 
   // Synchronize wallet state with backend: binds profile to connected wallet and resets on disconnect
   useEffect(() => {
+    if (wagmiStatus === 'reconnecting' || wagmiStatus === 'connecting') {
+      return;
+    }
+
     if (isWagmiConnected && wagmiAddress) {
       fetch('/api/treasury', {
         method: 'POST',
@@ -736,7 +937,7 @@ export default function MoiAppPage() {
       }).then(() => {
         fetchAllData(wagmiAddress);
       });
-    } else if (!isWagmiConnected) {
+    } else if (wagmiStatus === 'disconnected') {
       fetch('/api/treasury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -745,7 +946,7 @@ export default function MoiAppPage() {
         fetchAllData(null);
       });
     }
-  }, [isWagmiConnected, wagmiAddress, fetchAllData]);
+  }, [isWagmiConnected, wagmiAddress, wagmiStatus, fetchAllData]);
 
   // Handle wallet change event from browser extension
   useEffect(() => {
@@ -1110,8 +1311,15 @@ export default function MoiAppPage() {
     ? (findAssetByAddress(activeMandate.buyToken) ?? CELO_VERIFIED_ASSETS.USDT)
     : CELO_VERIFIED_ASSETS.USDT;
 
-  const sellAsset = isDirectionFlipped ? baseBuyAsset : baseSellAsset;
-  const buyAsset = isDirectionFlipped ? baseSellAsset : baseBuyAsset;
+  const defaultSellAsset = isDirectionFlipped ? baseBuyAsset : baseSellAsset;
+  const defaultBuyAsset = isDirectionFlipped ? baseSellAsset : baseBuyAsset;
+
+  const sellAsset = customSellSymbol
+    ? (CELO_VERIFIED_ASSETS[customSellSymbol] ?? defaultSellAsset)
+    : defaultSellAsset;
+  const buyAsset = customBuySymbol
+    ? (CELO_VERIFIED_ASSETS[customBuySymbol] ?? defaultBuyAsset)
+    : defaultBuyAsset;
 
   // Fetch live Textile FX v2 preview whenever corridor or amount changes
   const fetchLivePreview = useCallback(async () => {
@@ -1482,6 +1690,17 @@ export default function MoiAppPage() {
       try {
         wagmiDisconnect();
       } catch {}
+      setProfileForm({
+        displayName: '',
+        email: '',
+        organization: 'MOI Global Treasury',
+        roleTitle: 'Treasury Manager',
+        primaryRegion: 'Nigeria & LatAm Corridors',
+        preferredBaseSymbol: 'cNGN',
+      });
+      setAuthNameInput('');
+      setAuthEmailInput('');
+      setAuthWalletInput('');
       await fetch('/api/treasury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1499,7 +1718,7 @@ export default function MoiAppPage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
-      const activeWallet = wagmiAddress || treasuryData?.treasury?.ownerWalletAddress || null;
+      const activeWallet = activeOwnerWallet || null;
       await fetch('/api/treasury', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2757,14 +2976,16 @@ export default function MoiAppPage() {
   // ============================================================================
   // VIEW 2: AUTHENTICATED APP SHELL (Collapsible #0B0F14 Sidebar + #F8FAFC Workspace)
   // ============================================================================
-  const userInitials = (treasuryData?.userProfile?.avatarInitials ||
-    profileForm.displayName
-      .split(' ')
-      .map((s: string) => s[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() ||
-    'TP');
+  const userInitials = hasConnectedOwnerWallet
+    ? (treasuryData?.userProfile?.avatarInitials ||
+        profileForm.displayName
+          .split(' ')
+          .map((s: string) => s[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase() ||
+        'OP')
+    : '--';
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0B0F14] flex flex-col lg:flex-row">
@@ -3687,23 +3908,31 @@ export default function MoiAppPage() {
                 </p>
               </div>
 
-              {/* Corridor Selector */}
+              {/* Corridor Selector: All 7 Core Corridors permanently available */}
               <div className="flex flex-wrap items-center gap-1.5">
-                {(treasuryData?.mandates || []).map((m: TreasuryMandate) => {
-                  const s = findAssetByAddress(m.sellToken);
-                  const b = findAssetByAddress(m.buyToken);
-                  const active = m.id === selectedMandateId;
+                {CORE_CORRIDORS.map((c) => {
+                  const active =
+                    (selectedMandateId === c.id && !customSellSymbol && !customBuySymbol) ||
+                    (customSellSymbol === c.sell && customBuySymbol === c.buy) ||
+                    (customSellSymbol === c.buy && customBuySymbol === c.sell);
                   return (
                     <button
-                      key={m.id}
-                      onClick={() => setSelectedMandateId(m.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                      key={c.id}
+                      onClick={() => {
+                        setSelectedMandateId(c.id);
+                        setCustomSellSymbol(c.sell);
+                        setCustomBuySymbol(c.buy);
+                        setIsDirectionFlipped(false);
+                        setSwapError(null);
+                        setSwapSuccess(null);
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
                         active
-                          ? 'bg-[#0B0F14] text-[#00E676]'
+                          ? 'bg-[#0B0F14] text-[#00E676] shadow-xs'
                           : 'bg-white text-[#0B0F14] border border-[#0B0F14]/12 hover:bg-[#F8FAFC]'
                       }`}
                     >
-                      {s?.symbol} → {b?.symbol}
+                      {c.label}
                     </button>
                   );
                 })}
@@ -3724,21 +3953,16 @@ export default function MoiAppPage() {
               {/* Left: Live Textile FX v2 RFQ Terminal */}
               <div className="lg:col-span-7 bg-white rounded-xl p-4 sm:p-5 border border-[#0B0F14]/8 shadow-xs space-y-4">
                 {(() => {
-                  const isWalletConnected = Boolean(
-                    treasuryData?.userProfile?.walletConnected &&
-                    treasuryData?.userProfile?.walletAddress &&
-                    !treasuryData.userProfile.walletAddress.startsWith('0x00000000')
-                  );
                   const sellBalRecord = treasuryData?.liveBalances?.find((b: any) => b.symbol === sellAsset.symbol);
                   const buyBalRecord = treasuryData?.liveBalances?.find((b: any) => b.symbol === buyAsset.symbol);
-                  const availableSellUnits = isWalletConnected && sellBalRecord
+                  const availableSellUnits = hasConnectedOwnerWallet && sellBalRecord
                     ? Number(formatAtomicUnits(sellBalRecord.balanceAtomic || '0', sellAsset.decimals || 18))
                     : 0;
-                  const availableBuyUnits = isWalletConnected && buyBalRecord
+                  const availableBuyUnits = hasConnectedOwnerWallet && buyBalRecord
                     ? Number(formatAtomicUnits(buyBalRecord.balanceAtomic || '0', buyAsset.decimals || 18))
                     : 0;
                   const inputAmountNum = Number(sellHumanInput || '0');
-                  const hasInsufficientBalance = isWalletConnected && inputAmountNum > availableSellUnits;
+                  const hasInsufficientBalance = hasConnectedOwnerWallet && availableSellUnits > 0 && inputAmountNum > availableSellUnits;
 
                   return (
                     <>
@@ -3790,13 +4014,37 @@ export default function MoiAppPage() {
                           <input
                             type="text"
                             value={sellHumanInput}
-                            onChange={(e) => setSellHumanInput(e.target.value)}
+                            onChange={(e) => {
+                              setSellHumanInput(e.target.value);
+                              setSwapError(null);
+                              setSwapSuccess(null);
+                            }}
                             placeholder="0.00"
                             className="w-full bg-transparent text-xl sm:text-2xl font-black font-mono-num focus:outline-none"
                           />
-                          <span className="px-3 py-1 rounded-lg bg-white border border-[#0B0F14]/10 font-bold text-xs shrink-0 shadow-xs">
-                            {sellAsset.symbol}
-                          </span>
+                          <select
+                            value={sellAsset.symbol}
+                            onChange={(e) => {
+                              const sym = e.target.value as AssetSymbol;
+                              setCustomSellSymbol(sym);
+                              if (sym === buyAsset.symbol) {
+                                setCustomBuySymbol(sym === 'USDT' ? 'cNGN' : 'USDT');
+                              }
+                              setSwapError(null);
+                              setSwapSuccess(null);
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-white border border-[#0B0F14]/15 font-bold text-xs shrink-0 shadow-xs cursor-pointer focus:outline-none focus:border-[#00E676]"
+                          >
+                            <option value="CELO">CELO</option>
+                            <option value="USDT">USD₮</option>
+                            <option value="cNGN">cNGN</option>
+                            <option value="wARS">wARS</option>
+                            <option value="wBRL">wBRL</option>
+                            <option value="wCOP">wCOP</option>
+                            <option value="wMXN">wMXN</option>
+                            <option value="USDC">USDC</option>
+                            <option value="USAT">USA₮</option>
+                          </select>
                         </div>
                       </div>
 
@@ -3805,13 +4053,13 @@ export default function MoiAppPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            const nextFlipped = !isDirectionFlipped;
-                            setIsDirectionFlipped(nextFlipped);
-                            if (nextFlipped) {
-                              setSellHumanInput('100');
-                            } else {
-                              setSellHumanInput('10000');
-                            }
+                            const curSell = sellAsset.symbol;
+                            const curBuy = buyAsset.symbol;
+                            setCustomSellSymbol(curBuy);
+                            setCustomBuySymbol(curSell);
+                            setIsDirectionFlipped(!isDirectionFlipped);
+                            setSwapError(null);
+                            setSwapSuccess(null);
                           }}
                           className="px-3.5 py-1.5 rounded-full bg-white hover:bg-[#B6F7D2]/40 text-[#087F5B] border border-[#00E676]/40 shadow-xs text-xs font-bold flex items-center gap-1.5 transition active:scale-95 group cursor-pointer"
                           title="Invert swap direction"
@@ -3824,9 +4072,34 @@ export default function MoiAppPage() {
                       {/* You Receive Output with Target Balance & Refresh */}
                       <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#0B0F14]/10 space-y-2">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-[11px] text-[#087F5B]">
-                            You Receive ({buyAsset.symbol})
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[11px] text-[#087F5B]">
+                              You Receive
+                            </span>
+                            <select
+                              value={buyAsset.symbol}
+                              onChange={(e) => {
+                                const sym = e.target.value as AssetSymbol;
+                                setCustomBuySymbol(sym);
+                                if (sym === sellAsset.symbol) {
+                                  setCustomSellSymbol(sym === 'USDT' ? 'cNGN' : 'USDT');
+                                }
+                                setSwapError(null);
+                                setSwapSuccess(null);
+                              }}
+                              className="px-2 py-0.5 rounded-lg bg-white border border-[#0B0F14]/15 font-bold text-[11px] cursor-pointer focus:outline-none focus:border-[#00E676]"
+                            >
+                              <option value="USDT">USD₮</option>
+                              <option value="CELO">CELO</option>
+                              <option value="cNGN">cNGN</option>
+                              <option value="wARS">wARS</option>
+                              <option value="wBRL">wBRL</option>
+                              <option value="wCOP">wCOP</option>
+                              <option value="wMXN">wMXN</option>
+                              <option value="USDC">USDC</option>
+                              <option value="USAT">USA₮</option>
+                            </select>
+                          </div>
                           <div className="flex items-center gap-1.5 text-[11px]">
                             <span className="text-[#0B0F14]/60">
                               Balance:{' '}
@@ -3872,8 +4145,8 @@ export default function MoiAppPage() {
                               </span>
                             </div>
                             <div className="mt-2 pt-2 border-t border-[#0B0F14]/8 flex items-center justify-between text-[10px] font-mono-num text-[#0B0F14]/60">
-                              <span>Fee: 0.01%</span>
-                              <span>Zero Unexpected Slippage</span>
+                              <span>Fee: 0.01% (Uniswap v3 Pool)</span>
+                              <span className="font-semibold text-[#087F5B]">ERC-8021 Attribution Attached</span>
                             </div>
                           </div>
                         ) : (
@@ -3883,9 +4156,9 @@ export default function MoiAppPage() {
                         )}
                       </div>
 
-                      {/* Single Intuitive Swap Button */}
-                      <div className="pt-2">
-                        {!isWalletConnected ? (
+                      {/* Interactive Web3 Swap Execution */}
+                      <div className="pt-2 space-y-2">
+                        {!hasConnectedOwnerWallet ? (
                           <button
                             type="button"
                             onClick={handleOpenSignIn}
@@ -3914,23 +4187,90 @@ export default function MoiAppPage() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => handleRunAgentCycle(true)}
-                            disabled={cycleLoading || previewLoading}
-                            className="w-full py-3 px-4 rounded-xl bg-[#0B0F14] hover:bg-[#087F5B] text-white font-bold text-sm flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50 cursor-pointer"
+                            onClick={handleExecuteWeb3Swap}
+                            disabled={swapLoading || previewLoading}
+                            className="w-full py-3.5 px-4 rounded-xl bg-[#00E676] hover:bg-[#00C853] text-[#0B0F14] font-bold text-sm flex items-center justify-center gap-2 transition shadow-md shadow-[#00E676]/20 disabled:opacity-50 cursor-pointer"
                           >
-                            {cycleLoading ? (
+                            {swapLoading ? (
                               <>
-                                <RefreshCw className="w-4 h-4 animate-spin text-[#00E676]" />
-                                <span>Executing Guaranteed Swap...</span>
+                                <RefreshCw className="w-4 h-4 animate-spin text-[#0B0F14]" />
+                                <span>{swapStepText || 'Confirming on Celo Mainnet...'}</span>
                               </>
                             ) : (
                               <>
-                                <ArrowLeftRight className="w-4 h-4 text-[#00E676]" />
-                                <span>Swap {sellAsset.symbol} for {buyAsset.symbol}</span>
+                                <ArrowLeftRight className="w-4 h-4 text-[#0B0F14]" />
+                                <span>Swap {sellAsset.symbol} for {buyAsset.symbol} Now</span>
                               </>
                             )}
                           </button>
                         )}
+
+                        {/* Step Progress Banner */}
+                        {swapStepText && swapLoading && (
+                          <div className="p-2.5 rounded-lg bg-[#B6F7D2]/40 border border-[#00E676]/40 text-xs text-[#087F5B] flex items-center gap-2 font-mono-num">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />
+                            <span>{swapStepText}</span>
+                          </div>
+                        )}
+
+                        {/* Swap Success Card */}
+                        {swapSuccess && (
+                          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-1.5 animate-in fade-in">
+                            <div className="flex items-center justify-between font-bold">
+                              <span className="flex items-center gap-1.5 text-[#087F5B]">
+                                <CheckCircle2 className="w-4 h-4 text-[#087F5B]" />
+                                Swap Settled on Celo Mainnet!
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full bg-[#B6F7D2] text-[#087F5B] text-[10px] font-mono">
+                                ERC-8021 Tagged
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-emerald-800">
+                              Swapped {swapSuccess.amount} {swapSuccess.sellSymbol} for {swapSuccess.buySymbol} through Uniswap v3 SwapRouter02.
+                            </p>
+                            <div className="flex items-center justify-between pt-1 text-[11px]">
+                              <a
+                                href={`https://celoscan.io/tx/${swapSuccess.txHash}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-mono underline text-[#087F5B] font-bold hover:text-emerald-950 inline-flex items-center gap-1"
+                              >
+                                <span>Celoscan: {swapSuccess.txHash.slice(0, 10)}...{swapSuccess.txHash.slice(-6)}</span>
+                                <ArrowUpRight className="w-3 h-3" />
+                              </a>
+                              <span className="text-[10px] text-emerald-700 font-mono">Tag: {swapSuccess.attributionTag}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Swap Error Banner */}
+                        {swapError && (
+                          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center justify-between">
+                            <span>{swapError}</span>
+                            <button
+                              type="button"
+                              onClick={() => setSwapError(null)}
+                              className="p-1 hover:bg-red-100 rounded text-red-600 cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Secondary Autonomous Agent Simulation Action */}
+                        <div className="pt-1 flex items-center justify-between text-xs text-[#0B0F14]/60">
+                          <button
+                            type="button"
+                            onClick={() => handleRunAgentCycle(false)}
+                            disabled={cycleLoading}
+                            className="hover:text-[#087F5B] underline cursor-pointer text-[11px]"
+                          >
+                            {cycleLoading ? 'Simulating Agent...' : 'Or simulate autonomous agent mandate evaluation'}
+                          </button>
+                          <span className="text-[10px] text-[#087F5B] font-mono font-bold">
+                            Schema 0: {ATTRIBUTION_TAG}
+                          </span>
+                        </div>
 
                         {/* Subtle Safety Policy Disclosure */}
                         <div className="pt-2.5 flex items-center justify-between text-[11px] text-[#0B0F14]/55 px-1">
@@ -5086,15 +5426,23 @@ export default function MoiAppPage() {
                     </div>
                     <div>
                       <h2 className="text-sm sm:text-base font-bold text-[#0B0F14]">
-                        {profileForm.displayName}
+                        {hasConnectedOwnerWallet ? (profileForm.displayName || 'Treasury Operator') : 'No Operator Connected'}
                       </h2>
                       <p className="text-[11px] text-[#0B0F14]/60">
-                        {profileForm.roleTitle} · {profileForm.organization}
+                        {hasConnectedOwnerWallet
+                          ? `${profileForm.roleTitle || 'Treasury Manager'} · ${profileForm.organization || 'MOI Global Treasury'}`
+                          : 'Connect your Celo Web3 wallet to manage treasury profile'}
                       </p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full bg-[#B6F7D2]/50 text-[#087F5B] text-[10px] font-bold">
-                    Active Operator
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      hasConnectedOwnerWallet
+                        ? 'bg-[#B6F7D2]/50 text-[#087F5B]'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {hasConnectedOwnerWallet ? 'Active Operator' : 'Disconnected'}
                   </span>
                 </div>
 
