@@ -1760,11 +1760,11 @@ export default function MoiAppPage() {
         />
 
         {/* Navigation Bar */}
-        <header className="relative z-20 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5 shrink-0">
+        <header className="relative z-20 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3 sm:gap-4 flex-nowrap">
+          <div className="flex items-center gap-2.5 shrink-0 min-w-fit">
             <MoiRibbonMark className="w-8 h-6.5 shrink-0" />
-            <div>
-              <span className="text-lg font-black tracking-tight text-[#0B0F14] block leading-none">
+            <div className="shrink-0">
+              <span className="text-lg font-black tracking-tight text-[#0B0F14] block leading-none whitespace-nowrap">
                 MOI
               </span>
               <span className="text-[9px] font-semibold text-[#087F5B] tracking-wider uppercase whitespace-nowrap block mt-0.5">
@@ -1773,7 +1773,7 @@ export default function MoiAppPage() {
             </div>
           </div>
 
-          <nav className="hidden xl:flex items-center gap-6 text-[11px] font-semibold text-[#0B0F14]/70">
+          <nav className="hidden 2xl:flex items-center gap-6 text-[11px] font-semibold text-[#0B0F14]/70 shrink-0">
             <a href="#workflow" className="hover:text-[#087F5B] transition whitespace-nowrap">
               How It Works
             </a>
@@ -1790,9 +1790,9 @@ export default function MoiAppPage() {
               href="/api/identity/agent.json"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-[#087F5B] transition inline-flex items-center gap-1 whitespace-nowrap"
+              className="hover:text-[#087F5B] transition inline-flex items-center gap-1 whitespace-nowrap shrink-0"
             >
-              <span>Docs (ERC-8004)</span>
+              <span className="whitespace-nowrap">Docs (ERC-8004)</span>
               <ArrowUpRight className="w-3 h-3 shrink-0" />
             </a>
           </nav>
@@ -1800,9 +1800,9 @@ export default function MoiAppPage() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleLaunchApp}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
             >
-              <LayoutDashboard className="w-3.5 h-3.5 text-[#087F5B]" />
+              <LayoutDashboard className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
               <span>Enter Treasury OS</span>
             </button>
             <MoiWalletButton size="sm" />

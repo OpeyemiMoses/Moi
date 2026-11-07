@@ -1,0 +1,278 @@
+Agents on Open Rails Hackathon | Loops House
+Skip to main content
+Agents on Open Rails Hackathon
+Loops House
+Loops House
+Builder
+Back
+About
+Prizes
+Speakers
+FAQ
+Log In
+Hackathon
+Enroll now
+Registration ends
+Nov 9
+Submission ends
+Nov 9
+Next phase
+--
+--
+Prize pool
+$5,000
+Enroll now
+Agents that earn, pay and settle on live payment rails, with real money moving.
+Agents are becoming economic actors. To be useful, they need an identity others can verify, a way to pay and get paid without a human in the loop, and money that means something where their users live. Celo has all three live on mainnet:
+ERC-8004 identity
+,
+x402 machine payments
+through a hosted facilitator, and local and global stablecoins on a blockchain network with sub-cent fees payable in stablecoins, including USD₮, USDC, and USA₮.
+Attribution tags
+track onchain contributions to make sure builders are judged for the activity they create.
+The
+Agents on Open Rails Hackathon
+puts Celo's rails to work. Past hackathon editions proved builders can ship agents on Celo. This one is about demand: agents with somebody real on the other side of the transaction. Every track is built on payment rails that are already live, with real liquidity behind them, and is scored on real onchain activity.
+Three tracks, $5,000 in prizes
+Stable Agents: LatAm (
+Ripio
+× Celo Core Co.) — 🥇 $1,500 · 🥈 $500
+.
+Across LatAm, moving money often means converting through the dollar first, with fees at every step. Build agents that charge, pay, save, and settle directly in Ripio's local currency stablecoins: wARS, wBRL, wMXN, wCOP, wPEN, and wCLP. Payroll, subscriptions, remittances, and merchant tools that never leave pesos, reais, or soles.
+Stable Agents: Open Corridors.
+Agents that make crossing between currencies affordable, fast, and verifiable. Two subtracks:
+Textile FX — 🥇 $750 · 🥈 $250
+. Agents that quote and settle FX on
+Textile
+, a permissionless onchain FX marketplace (cNGN, wARS, wBRL and USDC against USD₮): smarter pricing, or treasury agents that manage a business's currency exposure.
+USA₮ with x402 — 🥇 $750 · 🥈 $250
+. Products with real users settling USA₮ through
+Celo's x402 facilitator
+.
+Build with
+buy
+— $1,000 across 5 projects
+.
+Solve a real problem with a product that pays for services it doesn't own, from compute and browsers to data and inference.
+Timeline
+Tue 6 Oct: Agents on Open Rails Hackathon during the Kick-Off livestream.
+Watch now
+Thu 8 Oct:
+Stable Agents: LatAm | Live stream with Ripio.
+Watch now
+Tue Oct 13: Build with buy | Live stream with Cencori, Chainstack, and SQD.
+Watch now
+Sat 17 Oct:
+Builders Sessions by Celo Core Co. and Ripio in six cities in Argentina
+Mon 9 Nov, 09:00 GMT: registration and submission deadline
+Fri 13 Nov: winners announced
+Beyond the prizes
+Every team gets 3 months of
+Chainstack
+'s Growth Plan free: globally distributed dedicated nodes with 99.9%+ uptime.
+Prezenti has $165K in grants
+available this season, and your performance in Celo's hackathons adds to your track record when you apply.
+See all grant pools
+.
+Tag every
+transaction
+Only Celo mainnet
+counts. A transaction sent without your tag
+can never be credited later.
+How tagging works
+Get your tag
+issued the moment you enroll
+Your entry's attribution tag is ready before you build anything. Wire it in before your agent sends its first transaction.
+Bridge to Celo
+Tag every tx
+one line, mainnet only
+Add it where your wallet client is built and every transaction carries it. Only Celo mainnet counts, testnets don't.
+ERC-8004 identity
+Register
+wallet and ERC-8004 identity
+Add your agent's wallet to your entry and register its ERC-8004 identity from that wallet, before the deadline.
+Sponsor Tracks & Prizes
+$5,000
+Prize Pool
+Stable Agents: LatAm | Ripio x Celo Core Co
+www.ripio.com/
+Stable Agents: Open Corridors | Textile FX
+app.textilecredit.com/
+Build with buy
+usebuy.ai/
+Stable Agents: Open Corridors | USA₮ with x402
+x402.celo.org/
+Stable Agents: LatAm | Ripio x Celo Core Co
+www.ripio.com/
+About
+Bounties
+Resources
+Judging
+Ripio
+has been building crypto infrastructure in Latin America since 2013, with operations across Argentina, Brazil, Mexico, Colombia, Chile, and Peru. Its
+wFIAT
+stablecoins (wARS, wBRL, wMXN, wCOP, wCLP and wPEN) are ERC-20 tokens backed 1:1 by local currency, live on Celo mainnet, with free on- and off-ramps through Ripio.
+Why builders are excited:
+An agent can now hold, charge, and settle in the currency its users actually earn and spend. Celo fees can be paid in stablecoins, and wARS, wBRL, and wCOP already settle through
+Celo's x402 facilitator
+, so pay-per-call in pesos or reais works today (wMXN, wPEN, and wCLP are live on Celo for transfers and payments).
+Ideas to build
+Pay-per-call APIs and agent services priced in pesos or reais over x402
+Payroll, freelancer payouts, and subscriptions that settle in local currency
+Transfers that move directly between LatAm currencies, such as wBRL to wARS
+Merchant agents that invoice, collect, and reconcile in wARS, wMXN, or wCOP
+Savings and budgeting agents that help households plan in their own currency
+MiniPay-style consumer flows for everyday payments
+Watch the
+live stream with Ripio
+hosted on Thu 8 Oct to learn more.
+wFIAT contract addresses:
+Same address on Celo and other EVM chains. All tokens use 18 decimals.
+wARS:
+0x0dc4f92879b7670e5f4e4e6e3c801d229129d90d
+·
+CoinGecko
+wBRL:
+0xd76f5faf6888e24d9f04bf92a0c8b921fe4390e0
+·
+CoinGecko
+wMXN:
+0x337e7456b420bd3481e7fa61fa9850343d610d34
+·
+CoinGecko
+wCOP:
+0x8a1d45e102e886510e891d2ec656a708991e2d76
+·
+CoinGecko
+wPEN:
+0x4F34c8b3b5FB6D98Da888F0feA543d4d9C9F2eBE
+·
+CoinGecko
+wCLP:
+0x61D450a098b6a7f69fC4b98CE68198fe59768651
+·
+CoinGecko
+On- and off-ramps:
+There are two ways to use Ripio's B2B ramps with wFIAT stablecoins:
+Ramps API:
+documentation at
+docs.ripio.com
+. Onboard through
+platform.ripio.com
+, where you complete due diligence and KYB. This path is for legal entities (companies).
+ramp.ripio.com
+with query params (easiest for the hackathon):
+no credentials needed. Build a URL and send users straight into Ripio's ramp flow:
+/
+for on-ramp and
+/offramp
+for off-ramp. When
+country
+,
+chain
+,
+token
+and
+amount
+are all present, the user goes directly to the Ripio flow; otherwise the params prefill the form.
+address
+sets the destination wallet. Available networks and tokens vary by country.
+Example (on-ramp, wARS on Celo, Argentina):
+https://ramp.ripio.com/?country=AR&chain=42220&token=WARS&amount=10000&address=0x...
+Bridge:
+Use Ripio's bridge directly as a dapp at
+bridge.ripio.com
+, or integrate it into your product. Developer docs:
+bridge.ripio.com/developers
+Partners
+With the support of
+Mentors | Speakers | Judges
+FAQ
+Frequently Asked Questions
+How are winners decided?
++
+Each track is scored by a query we publish before the window opens, and the live leaderboard runs on that same query. A human panel makes the final call, using query data plus the Loops judge's reading of your repository.
+
+- Stable Agents: LatAm: it works on mainnet with a real wFIAT token, makes real use of wFIAT and the Celo stack, the agent is autonomous and useful, a real person can use the UX, and the impact for LatAm is clear.
+- Open Corridors, Textile FX: strategy P&L, volume quoted and filled, and originality.
+- Open Corridors, USA₮ over x402: real settlement between independent parties, with the currency choice justified by the user it serves.
+- Build with buy: the problem you solve and the depth of your integration, meaning verified paid calls into services you don't control and the growth they create for those services.
+What counts as an independent user?
++
+A wallet that is not yours, was not first funded by you or your main funder, and had its own activity on Celo before the hackathon started. Wallets that exist only because you created and funded them do not count.
+My users are new to Celo. Does that disqualify me?
++
+No. Onboarding new people is exactly what we want, and we measure it in other ways.
+I sponsor gas for my users. Will they still be counted?
++
+Yes. We count signers and authorisers, not only gas payers, so gasless and MiniPay flows are not penalised. However, gas our relayer pays on your behalf does not count as your contribution. Make sure to mention architecture like this in your submission.
+What is an attribution tag, and where does it go?
++
+A short ERC-8021 code your app appends to the calldata of every transaction it sends. It is how the leaderboard knows a transaction came from you. It goes in the code that builds and sends transactions (usually your frontend or agent backend), not in your smart contract. As the attribution tag can't be added to transactions retroactively, transactions without the tag can't be counted from our side, so make sure to implement it before your first transaction. 
+For all x402 transactions, we need your PayTo wallet address, as attribution tags are still not supported.
+What is ERC-8004, and why do I need an Agent ID?
++
+ERC-8004 is the agent identity registry. Your agent gets an onchain ID showing it exists and who owns it, so others can check it before transacting. It takes a few minutes and is required for every track. You can explore registered agents on 8004scan (8004scan.io). Your project will only be valid with an ERC-8004 identity.
+What is Celo’s x402 native facilitator?
++
+x402 is an open standard that turns HTTP 402 into a real payment step: the server answers with a price, your client signs a stablecoin authorisation, and the request is retried with payment attached.
+Celo's hosted facilitator at x402.celo.org settles USDC, USD₮, USA₮, wARS, wBRL and wCOP. Sellers get an API key at x402.celo.org that includes 20 free mainnet settlements. After those, each settlement is charged gas at cost plus 0.3% of the payment value, paid from a prepaid balance.
+For all x402 transactions, we need your PayTo wallet address. Attribution tags are not yet supported by x402.
+Can I enter more than one track?
++
+Yes. You can enter as many tracks as you want, but a team can win only one prize per track.
+Do I have to use a particular agent framework?
++
+No. Any framework works. What matters is what happens onchain and whether a real person uses it.
+What if my project does not fit any track?
++
+Enter the closest one and tell us in your submission. We would rather see a strong project than lose it.
+I am registering late. Is it worth it?
++
+Yes. Stages can be cleared at any pace. Just register and wire in your attribution tag before sending anything you want counted, because it cannot be backfilled.
+What happens after the hackathon?
++
+Winners and projects with real users get co-marketing, mentorship and ecosystem introductions to keep scaling on Celo. Agents other teams used get listed in the curated Celo set on Aigora. Your hackathon track record counts when you apply for Prezenti Grants, and every submission earns a Builder Graph rating and a Certify credential.
+How is Stable Agents: LATAM judged?
++
+On five criteria set by Ripio: it works on mainnet with a real wFiat token, it makes real use of wFiat and the Celo stack, the agent is autonomous and useful, a real person can use the UX, and the impact for LATAM is clear.
+How is Stable Agents: Open Corridors judged?
++
+Textile FX lane: strategy P&L, volume quoted and filled, and originality. USA₮ lane: real settlement between independent parties, with the currency choice justified by the user it serves.
+How is Build with buy judged?
++
+On the problem you solve and the depth of your integration: verified paid calls from your tagged wallet into services you don't control, and the growth they create for those services. Independent users are a qualifier. Spamming the cheapest call scores nothing.
+Please state what services you are using and provide proof of payment in your submission. No attribution tag needed here.
+What are the rules?
++
+Celo mainnet only (testnet references in your repo are fine). Public GitHub repo at registration that still resolves at judging. Sponsored gas is not builder contribution. Attribution tag must be implemented. Enter as many tracks as you want; a team can win only one prize per track. Code is written during the hackathon.
+What if something in my project looks wrong?
++
+We raise it with you privately, and you have 48 hours to reply before anything is said publicly. Nobody is disqualified by a dashboard. We also recommend mentioning where your users or volume came from.
+Where can I get support?
++
+Join our hackathon Telegram group (t.me/realworldagentshackathon), our weekly Office Hours on Thursdays at 12:00 GMT, and our livestream sessions on X Spaces or YouTube.
+What is buy?
++
+buy (usebuy.ai) turns HTTP 402 Payment Required into a working status code: a stablecoin payment signed locally on Celo, attached to the retry, and optionally a proof that a real human is behind it. Skills and feedback live in celo-org/buy-skill on GitHub.
+Where can I find resources?
++
+- Celopedia (celopedia.celo.org): the all-in-one library for building on Celo
+- x402.celo.org: the x402 payment protocol on Celo
+- buy (usebuy.ai): the x402 payment client and agent service marketplace, with skills in celo-org/buy-skill
+- USA₮ for verified, eligible humans (Google Cloud Web3 faucet): verify once with Self and claim USA₮ on Celo mainnet
+- Textile FX (app.textilecredit.com): onchain FX liquidity, USD₮ against cNGN, wARS, wBRL and USDC
+- cNGN (cngn.co): the regulated, fiat-backed Nigerian naira stablecoin
+- AskBots (askbots.ai): reviewer agents that read your project and rate it
+- Para (docs.getpara.com): smart wallet infrastructure for agents
+- ERC-8004 and 8004scan (8004scan.io): agent identity and onchain agent activity
+- Attribution tags (github.com/celo-org/attribution-tags): the ERC-8021 SDK for onchain attribution
+- Chainstack (chainstack.com): dedicated Celo nodes, 3 months of Growth Plan free for every team
+- Celo Docs (docs.celo.org)
+Where do I get stablecoins to build with?
++
+Eligible users can get their first allocation of USA₮ from the Google Cloud Web3 faucet once you verify with Self. cNGN is at cngn.co and through Textile FX. Ripio's wFIAT tokens are live on Celo mainnet, and the Ripio livestream on 8 October covers how to use them.
+About
+Prizes
+Speakers
+FAQ
