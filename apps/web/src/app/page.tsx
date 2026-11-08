@@ -94,6 +94,25 @@ type AppTab =
   | 'profile'
   | 'settings';
 
+const LOCAL_INVOICES_STORAGE_KEY = 'moi_invoices_registry_v1';
+
+function getStoredLocalInvoices(): any[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_INVOICES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStoredLocalInvoices(invoices: any[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_INVOICES_STORAGE_KEY, JSON.stringify(invoices));
+  } catch {}
+}
+
 export default function MoiAppPage() {
   const { address: wagmiAddress, isConnected: isWagmiConnected, status: wagmiStatus, connector } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
@@ -913,7 +932,34 @@ export default function MoiAppPage() {
         sRes.json(),
         iRes.json(),
       ]);
-      setTreasuryData(tJson);
+      // Merge server invoices with locally persisted invoices to prevent ephemeral serverless container cold-starts from dropping records
+      const localInvs = getStoredLocalInvoices();
+      const serverInvs = Array.isArray(tJson?.invoices) ? tJson.invoices : [];
+      const invMap = new Map<string, any>();
+      for (const inv of localInvs) {
+        if (inv && inv.id) invMap.set(inv.id, inv);
+      }
+      for (const inv of serverInvs) {
+        if (inv && inv.id) {
+          const existing = invMap.get(inv.id);
+          invMap.set(inv.id, { ...existing, ...inv });
+        }
+      }
+      const combinedInvoices = Array.from(invMap.values());
+      const filteredInvoices = activeWallet
+        ? combinedInvoices.filter(
+            (inv) =>
+              !inv.creatorWallet ||
+              inv.creatorWallet.toLowerCase() === activeWallet.toLowerCase()
+          )
+        : combinedInvoices;
+
+      saveStoredLocalInvoices(combinedInvoices);
+
+      setTreasuryData({
+        ...tJson,
+        invoices: filteredInvoices,
+      });
       setBuyCatalogData(bJson);
       setStitchFeedData(sJson);
       setErc8004Data(iJson);
@@ -1014,34 +1060,6 @@ export default function MoiAppPage() {
     return () => clearInterval(interval);
   }, [hasConnectedOwnerWallet, activeOwnerWallet, fetchAllData]);
 
-  // Handle wallet change event from connected wallet provider
-  useEffect(() => {
-    let activeEth: any = null;
-    let handleAccountsChanged: any = null;
-
-    getConnectedEthereumProvider().then((eth) => {
-      if (eth && eth.on) {
-        activeEth = eth;
-        handleAccountsChanged = (accounts: string[]) => {
-          if (accounts.length > 0 && treasuryData?.userProfile?.walletAddress) {
-            const currentAccount = accounts[0].toLowerCase();
-            const sessionAccount = treasuryData.userProfile.walletAddress.toLowerCase();
-            if (currentAccount !== sessionAccount) {
-              // Active wallet changed - sign out of previous session
-              handleSignOut();
-            }
-          }
-        };
-        eth.on('accountsChanged', handleAccountsChanged);
-      }
-    });
-
-    return () => {
-      if (activeEth && activeEth.removeListener && handleAccountsChanged) {
-        activeEth.removeListener('accountsChanged', handleAccountsChanged);
-      }
-    };
-  }, [treasuryData?.userProfile?.walletAddress, getConnectedEthereumProvider]);
 
   // Dynamic QR Code generation for Receive modal matching connected wallet
   useEffect(() => {
@@ -1219,12 +1237,16 @@ export default function MoiAppPage() {
         throw new Error(data.error || 'Failed to persist signed invoice.');
       }
 
+      if (data.invoice) {
+        const currentLocals = getStoredLocalInvoices();
+        const updated = [data.invoice, ...currentLocals.filter((i) => i.id !== data.invoice.id)];
+        saveStoredLocalInvoices(updated);
+        setSelectedInvoiceForModal(data.invoice);
+      }
+
       setShowCreateInvoiceModal(false);
       setInvoiceFormRef(`INV-2026-${Math.floor(100 + Math.random() * 900)}`);
       await fetchAllData(connectedWallet);
-      if (data.invoice) {
-        setSelectedInvoiceForModal(data.invoice);
-      }
     } catch (err: any) {
       if (
         err?.name === 'UserRejectedRequestError' ||
@@ -1256,6 +1278,11 @@ export default function MoiAppPage() {
       });
       const data = await res.json();
       if (data.ok) {
+        const currentLocals = getStoredLocalInvoices();
+        const updated = currentLocals.map((i) =>
+          i.id === invoiceId ? { ...i, status: 'PAID' } : i
+        );
+        saveStoredLocalInvoices(updated);
         fetchAllData(activeOwnerWallet);
         if (selectedInvoiceForModal && selectedInvoiceForModal.id === invoiceId) {
           setSelectedInvoiceForModal({ ...selectedInvoiceForModal, status: 'PAID' });
@@ -1284,6 +1311,8 @@ export default function MoiAppPage() {
       if (!res.ok || !data.ok) {
         throw new Error(data.error || 'Failed to delete invoice.');
       }
+      const currentLocals = getStoredLocalInvoices();
+      saveStoredLocalInvoices(currentLocals.filter((i) => i.id !== invoiceToDelete.id));
       if (selectedInvoiceForModal && selectedInvoiceForModal.id === invoiceToDelete.id) {
         setSelectedInvoiceForModal(null);
       }

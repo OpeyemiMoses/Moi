@@ -101,13 +101,32 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
     try {
       const res = await fetch(`/api/invoices/${encodeURIComponent(invoiceId)}`);
       const data = await res.json();
-      if (!res.ok || !data.ok) {
+      if (!res.ok || !data.ok || !data.invoice) {
+        if (typeof window !== 'undefined') {
+          try {
+            const raw = localStorage.getItem('moi_invoices_registry_v1');
+            const list = raw ? JSON.parse(raw) : [];
+            const cleanId = decodeURIComponent(invoiceId).trim();
+            const found = list.find(
+              (i: any) =>
+                i.id === cleanId ||
+                i.invoiceNumber?.toLowerCase() === cleanId.toLowerCase()
+            );
+            if (found) {
+              setInvoice(found);
+              if (found.paidTxHash) setPaymentTxHash(found.paidTxHash);
+              setError(null);
+              return;
+            }
+          } catch {}
+        }
         throw new Error(data.error || 'Invoice not found.');
       }
       setInvoice(data.invoice);
       if (data.invoice.paidTxHash) {
         setPaymentTxHash(data.invoice.paidTxHash);
       }
+      setError(null);
     } catch (err: any) {
       setError(err?.message || 'Failed to load invoice.');
     } finally {
