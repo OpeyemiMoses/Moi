@@ -232,7 +232,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'update_profile') {
-      const wallet = body.profile?.walletAddress;
+      const wallet = body.profile?.walletAddress || req.nextUrl.searchParams.get('wallet');
       let targetId = tenantUserId;
       if (wallet && /^0x[a-fA-F0-9]{40}$/.test(wallet)) {
         const user = moiDb.authenticateVerifiedWallet(wallet as `0x${string}`, body.profile);

@@ -173,7 +173,9 @@ export default function MoiAppPage() {
     organization: 'MOI Global Treasury',
     roleTitle: 'Treasury Manager',
     primaryRegion: 'Nigeria & LatAm Corridors',
-    preferredBaseSymbol: 'cNGN' as AssetSymbol,
+    preferredBaseSymbol: (typeof window !== 'undefined'
+      ? (localStorage.getItem('moi_preferred_base_symbol') as AssetSymbol) || 'cNGN'
+      : 'cNGN') as AssetSymbol,
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [profileSavedToast, setProfileSavedToast] = useState(false);
@@ -965,13 +967,21 @@ export default function MoiAppPage() {
       setErc8004Data(iJson);
 
       if (tJson?.userProfile && activeWallet) {
+        const storedPref = (typeof window !== 'undefined'
+          ? (localStorage.getItem('moi_preferred_base_symbol') as AssetSymbol)
+          : null) || null;
+        const resolvedBase =
+          storedPref ||
+          (tJson.userProfile.preferredBaseSymbol as AssetSymbol) ||
+          'cNGN';
+
         setProfileForm({
           displayName: tJson.userProfile.displayName || '',
           email: tJson.userProfile.email || '',
           organization: tJson.userProfile.organization || 'MOI Global Treasury',
           roleTitle: tJson.userProfile.roleTitle || 'Treasury Manager',
           primaryRegion: tJson.userProfile.primaryRegion || 'Nigeria & LatAm Corridors',
-          preferredBaseSymbol: (tJson.userProfile.preferredBaseSymbol as AssetSymbol) || 'cNGN',
+          preferredBaseSymbol: resolvedBase,
         });
         setAuthNameInput(tJson.userProfile.displayName || '');
         setAuthEmailInput(tJson.userProfile.email || '');
@@ -1872,6 +1882,9 @@ export default function MoiAppPage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('moi_preferred_base_symbol', profileForm.preferredBaseSymbol);
+      }
       const activeWallet = activeOwnerWallet || null;
       await fetch('/api/treasury', {
         method: 'POST',
@@ -3476,14 +3489,22 @@ export default function MoiAppPage() {
                       value={profileForm.preferredBaseSymbol}
                       onChange={async (e) => {
                         const newBase = e.target.value as AssetSymbol;
+                        if (typeof window !== 'undefined') {
+                          localStorage.setItem('moi_preferred_base_symbol', newBase);
+                        }
                         setProfileForm((prev) => ({ ...prev, preferredBaseSymbol: newBase }));
                         try {
+                          const activeWallet = activeOwnerWallet || null;
                           await fetch('/api/treasury', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                               action: 'update_profile',
-                              profile: { ...profileForm, preferredBaseSymbol: newBase },
+                              profile: {
+                                ...profileForm,
+                                preferredBaseSymbol: newBase,
+                                walletAddress: activeWallet,
+                              },
                             }),
                           });
                         } catch (err) {
@@ -5805,12 +5826,16 @@ export default function MoiAppPage() {
                       </label>
                       <select
                         value={profileForm.preferredBaseSymbol}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const newBase = e.target.value as AssetSymbol;
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('moi_preferred_base_symbol', newBase);
+                          }
                           setProfileForm({
                             ...profileForm,
-                            preferredBaseSymbol: e.target.value as AssetSymbol,
-                          })
-                        }
+                            preferredBaseSymbol: newBase,
+                          });
+                        }}
                         className="w-full px-3 py-2 rounded-lg border border-[#0B0F14]/15 text-xs focus:outline-none focus:border-[#00E676] bg-white"
                       >
                         <option value="cNGN">cNGN (Nigerian Naira)</option>
