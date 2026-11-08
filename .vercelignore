@@ -1,10 +1,9 @@
 node_modules
 .next
 .git
-data
-tests
-*.mjs
-*.html
+/data
+/tests
 *.log
 *.tar.gz
+
 
