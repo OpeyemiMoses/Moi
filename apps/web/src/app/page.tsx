@@ -50,7 +50,7 @@ import {
 } from 'lucide-react';
 import { MoiHero3DEmblem, MoiRibbonMark } from '@/components/MoiLogo';
 import { MoiWalletButton } from '@/components/MoiWalletButton';
-import { useAccount, useDisconnect, useSignMessage } from 'wagmi';
+import { useAccount, useDisconnect, useSignMessage, useSignTypedData } from 'wagmi';
 import { encodeFunctionData, parseAbi, erc20Abi, maxUint256 } from 'viem';
 import {
   AssetSymbol,
@@ -98,6 +98,7 @@ export default function MoiAppPage() {
   const { address: wagmiAddress, isConnected: isWagmiConnected, status: wagmiStatus, connector } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+  const { signTypedDataAsync } = useSignTypedData();
 
   // Helper to obtain the specific EIP-1193 provider for the wallet connected via RainbowKit
   // Prevents third-party browser extensions (like Phantom) from hijacking window.ethereum
@@ -1123,29 +1124,23 @@ export default function MoiAppPage() {
     setInvoiceSigningError(null);
 
     const connectedWallet = activeOwnerWallet || '';
-    const eth = await getConnectedEthereumProvider();
     const invNumber = invoiceFormRef.trim() || `INV-2026-${Math.floor(100 + Math.random() * 900)}`;
 
     let creatorSignature = '';
     let signatureScheme: 'EIP-712' | 'personal_sign' = 'EIP-712';
 
     try {
-      if (eth && connectedWallet) {
+      if (connectedWallet) {
         try {
-          // 1. Try EIP-712 Typed Data ($0.00 Cost, Zero Gas)
+          // 1. Try Wagmi's native signTypedDataAsync (EIP-712 Typed Data, $0.00 Cost, Zero Gas)
           const domain = {
             name: 'MOI Invoicing & Payment Protocol',
             version: '1',
             chainId: 42220,
-            verifyingContract: '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432',
-          };
+            verifyingContract: '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432' as `0x${string}`,
+          } as const;
+
           const types = {
-            EIP712Domain: [
-              { name: 'name', type: 'string' },
-              { name: 'version', type: 'string' },
-              { name: 'chainId', type: 'uint256' },
-              { name: 'verifyingContract', type: 'address' },
-            ],
             Invoice: [
               { name: 'invoiceNumber', type: 'string' },
               { name: 'creator', type: 'address' },
@@ -1155,10 +1150,11 @@ export default function MoiAppPage() {
               { name: 'memo', type: 'string' },
               { name: 'createdAt', type: 'string' },
             ],
-          };
+          } as const;
+
           const message = {
             invoiceNumber: invNumber,
-            creator: connectedWallet,
+            creator: (connectedWallet || '0x0000000000000000000000000000000000000000') as `0x${string}`,
             clientName: invoiceFormClientName,
             amount: num.toString(),
             tokenSymbol: invoiceFormToken,
@@ -1166,19 +1162,29 @@ export default function MoiAppPage() {
             createdAt: new Date().toISOString(),
           };
 
-          creatorSignature = await eth.request({
-            method: 'eth_signTypedData_v4',
-            params: [
-              connectedWallet,
-              JSON.stringify({ domain, types, primaryType: 'Invoice', message }),
-            ],
+          creatorSignature = await signTypedDataAsync({
+            domain,
+            types,
+            primaryType: 'Invoice',
+            message,
           });
-        } catch (typedErr) {
-          // Fallback to standard personal_sign ($0.00 Cost, Zero Gas)
+          signatureScheme = 'EIP-712';
+        } catch (typedErr: any) {
+          console.warn('EIP-712 typed signing failed, trying personal_sign fallback:', typedErr);
+          // If the user deliberately rejected/cancelled the signature in the wallet, propagate the cancellation
+          if (
+            typedErr?.name === 'UserRejectedRequestError' ||
+            typedErr?.code === 4001 ||
+            typedErr?.message?.toLowerCase().includes('user rejected') ||
+            typedErr?.message?.toLowerCase().includes('cancelled')
+          ) {
+            throw typedErr;
+          }
+
+          // Fallback to standard personal_sign via Wagmi's signMessageAsync ($0.00 Cost, Zero Gas)
           const signPrompt = `MOI Invoicing Protocol\n\nAuthorize Payment Request: ${invNumber}\nClient: ${invoiceFormClientName}\nAmount: ${num} ${invoiceFormToken}\nMemo: ${invoiceFormMemo}\nNetwork: Celo Mainnet (42220)\nGas Cost: $0.00 (Zero Gas Signature)`;
-          creatorSignature = await eth.request({
-            method: 'personal_sign',
-            params: [signPrompt, connectedWallet],
+          creatorSignature = await signMessageAsync({
+            message: signPrompt,
           });
           signatureScheme = 'personal_sign';
         }
@@ -1215,14 +1221,23 @@ export default function MoiAppPage() {
 
       setShowCreateInvoiceModal(false);
       setInvoiceFormRef(`INV-2026-${Math.floor(100 + Math.random() * 900)}`);
-      fetchAllData();
+      await fetchAllData(connectedWallet);
       if (data.invoice) {
         setSelectedInvoiceForModal(data.invoice);
       }
     } catch (err: any) {
-      setInvoiceSigningError(
-        err?.message || 'Signature request was rejected by your wallet.'
-      );
+      if (
+        err?.name === 'UserRejectedRequestError' ||
+        err?.code === 4001 ||
+        err?.message?.toLowerCase().includes('user rejected') ||
+        err?.message?.toLowerCase().includes('cancelled')
+      ) {
+        setInvoiceSigningError('Signature request was cancelled by your wallet.');
+      } else {
+        setInvoiceSigningError(
+          err?.message || 'Failed to sign and create invoice.'
+        );
+      }
     } finally {
       setInvoiceSigningLoading(false);
     }
@@ -1241,7 +1256,7 @@ export default function MoiAppPage() {
       });
       const data = await res.json();
       if (data.ok) {
-        fetchAllData();
+        fetchAllData(activeOwnerWallet);
         if (selectedInvoiceForModal && selectedInvoiceForModal.id === invoiceId) {
           setSelectedInvoiceForModal({ ...selectedInvoiceForModal, status: 'PAID' });
         }

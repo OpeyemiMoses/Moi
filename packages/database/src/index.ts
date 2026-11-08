@@ -139,8 +139,9 @@ function findWorkspaceRoot(startDir: string): string {
   return startDir;
 }
 
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const ROOT_DIR = findWorkspaceRoot(process.cwd());
-const DATA_DIR = path.resolve(ROOT_DIR, 'data');
+const DATA_DIR = isServerless ? path.join('/tmp', 'moi-data') : path.resolve(ROOT_DIR, 'data');
 const STORE_PATH =
   process.env.MOI_STORE_PATH ||
   (process.env.NODE_ENV === 'test' || process.env.VITEST
@@ -503,8 +504,29 @@ export class MoiDatabase {
         }
         return parsed;
       }
+
+      // Seed from workspace data file if initial serverless store file doesn't exist yet
+      const seedFile = path.resolve(ROOT_DIR, 'data', 'moi-store.json');
+      if (fs.existsSync(seedFile)) {
+        const raw = fs.readFileSync(seedFile, 'utf-8');
+        const parsed = JSON.parse(raw) as MoiDatabaseState;
+        if (!parsed.treasuries || parsed.treasuries.length === 0) {
+          parsed.treasuries = [parsed.treasury];
+        }
+        if (!parsed.sessions) parsed.sessions = [];
+        if (!parsed.nonces) parsed.nonces = [];
+        if (!parsed.firstTradeAuthorizations) parsed.firstTradeAuthorizations = [];
+        if (!parsed.attestationConsumptions) parsed.attestationConsumptions = [];
+        if (!parsed.webhookEvents) parsed.webhookEvents = [];
+        if (!parsed.invoices) parsed.invoices = [];
+        this.save(parsed);
+        return parsed;
+      }
     } catch {
       // Fall through to initialize fresh store
+    }
+    if (this.state && this.state.treasury) {
+      return this.state;
     }
     const initial = createInitialState();
     this.save(initial);
@@ -512,6 +534,7 @@ export class MoiDatabase {
   }
 
   private save(nextState: MoiDatabaseState = this.state): void {
+    this.state = nextState;
     try {
       if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -1477,7 +1500,10 @@ export class MoiDatabase {
           inv.userId === userId ||
           (user?.walletAddress &&
             inv.creatorWallet &&
-            inv.creatorWallet.toLowerCase() === user.walletAddress.toLowerCase())
+            inv.creatorWallet.toLowerCase() === user.walletAddress.toLowerCase()) ||
+          (treasury.ownerWalletAddress &&
+            inv.creatorWallet &&
+            inv.creatorWallet.toLowerCase() === treasury.ownerWalletAddress.toLowerCase())
       ),
     };
   }
@@ -2298,10 +2324,13 @@ export class MoiDatabase {
     this.state = this.load();
     const user = this.getUserById(userId) || this.state.userProfile;
     const userWallet = user?.walletAddress?.toLowerCase();
+    const treasury = this.getOrCreateUserTreasury(userId, user?.walletAddress as `0x${string}`);
+    const treasuryWallet = treasury.ownerWalletAddress?.toLowerCase();
     return (this.state.invoices || []).filter(
       (inv) =>
         inv.userId === userId ||
-        (userWallet && inv.creatorWallet && inv.creatorWallet.toLowerCase() === userWallet)
+        (userWallet && inv.creatorWallet && inv.creatorWallet.toLowerCase() === userWallet) ||
+        (treasuryWallet && inv.creatorWallet && inv.creatorWallet.toLowerCase() === treasuryWallet)
     );
   }
 

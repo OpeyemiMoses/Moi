@@ -618,10 +618,14 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Ensure tenant profile exists for creator wallet
+      const user = moiDb.authenticateVerifiedWallet(creatorWallet as `0x${string}`);
+      const effectiveUserId = (auth.authenticated && auth.user ? auth.user.id : user.id) || tenantUserId;
+
       const invoice = moiDb.createInvoiceForUser(
         {
           invoiceNumber,
-          creatorWallet,
+          creatorWallet: creatorWallet as `0x${string}`,
           clientName,
           clientEmail,
           clientAddress,
@@ -632,7 +636,7 @@ export async function POST(req: NextRequest) {
           signatureScheme: signatureScheme || 'EIP-712',
           dueDate,
         },
-        tenantUserId
+        effectiveUserId
       );
 
       return NextResponse.json({
