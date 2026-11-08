@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useCallback } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle2,
@@ -42,8 +42,35 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
   const resolvedParams = use(params);
   const invoiceId = resolvedParams.id;
 
-  const { address: userWallet, isConnected, chain } = useAccount();
+  const { address: userWallet, isConnected, chain, connector } = useAccount();
   const { switchChain } = useSwitchChain();
+
+  // Helper to obtain the specific EIP-1193 provider for the wallet connected via RainbowKit
+  // Prevents third-party browser extensions (like Phantom) from hijacking window.ethereum
+  const getConnectedEthereumProvider = useCallback(async () => {
+    if (connector && typeof (connector as any).getProvider === 'function') {
+      try {
+        const p = await (connector as any).getProvider();
+        if (p) return p;
+      } catch (err) {
+        console.warn('Connector getProvider error:', err);
+      }
+    }
+    if (typeof window !== 'undefined') {
+      const eth = (window as any).ethereum;
+      if (!eth) return null;
+      if (Array.isArray(eth.providers) && eth.providers.length > 0) {
+        const nonPhantom = eth.providers.find(
+          (p: any) => !p.isPhantom && (p.isMetaMask || p.isRainbow || p.isCoinbaseWallet || p.isRabby)
+        );
+        if (nonPhantom) return nonPhantom;
+        const generalNonPhantom = eth.providers.find((p: any) => !p.isPhantom);
+        if (generalNonPhantom) return generalNonPhantom;
+      }
+      return eth;
+    }
+    return null;
+  }, [connector]);
 
   const [invoice, setInvoice] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,9 +189,9 @@ export default function InvoicePaymentCheckoutPage({ params }: InvoicePageProps)
       }
     }
 
-    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+    const eth = await getConnectedEthereumProvider();
     if (!eth) {
-      setPaymentError('No Web3 wallet extension detected in this browser.');
+      setPaymentError('Connected Web3 wallet (MetaMask/Rainbow/Coinbase) not detected. Please reconnect your wallet.');
       return;
     }
 

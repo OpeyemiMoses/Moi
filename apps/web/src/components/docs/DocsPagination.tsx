@@ -49,3 +49,4 @@ export function DocsPagination({ prev, next }: DocsPaginationProps) {
     </nav>
   );
 }
+

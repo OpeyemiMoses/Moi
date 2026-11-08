@@ -95,9 +95,36 @@ type AppTab =
   | 'settings';
 
 export default function MoiAppPage() {
-  const { address: wagmiAddress, isConnected: isWagmiConnected, status: wagmiStatus } = useAccount();
+  const { address: wagmiAddress, isConnected: isWagmiConnected, status: wagmiStatus, connector } = useAccount();
   const { disconnect: wagmiDisconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+
+  // Helper to obtain the specific EIP-1193 provider for the wallet connected via RainbowKit
+  // Prevents third-party browser extensions (like Phantom) from hijacking window.ethereum
+  const getConnectedEthereumProvider = useCallback(async () => {
+    if (connector && typeof (connector as any).getProvider === 'function') {
+      try {
+        const p = await (connector as any).getProvider();
+        if (p) return p;
+      } catch (err) {
+        console.warn('Connector getProvider error:', err);
+      }
+    }
+    if (typeof window !== 'undefined') {
+      const eth = (window as any).ethereum;
+      if (!eth) return null;
+      if (Array.isArray(eth.providers) && eth.providers.length > 0) {
+        const nonPhantom = eth.providers.find(
+          (p: any) => !p.isPhantom && (p.isMetaMask || p.isRainbow || p.isCoinbaseWallet || p.isRabby)
+        );
+        if (nonPhantom) return nonPhantom;
+        const generalNonPhantom = eth.providers.find((p: any) => !p.isPhantom);
+        if (generalNonPhantom) return generalNonPhantom;
+      }
+      return eth;
+    }
+    return null;
+  }, [connector]);
 
   const [viewMode, setViewMode] = useState<'landing' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
@@ -376,7 +403,7 @@ export default function MoiAppPage() {
     setSendError(null);
     setSendSuccess(null);
 
-    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+    const eth = await getConnectedEthereumProvider();
 
     try {
       if (eth && activeOwnerWallet) {
@@ -487,9 +514,9 @@ export default function MoiAppPage() {
     setSwapSuccess(null);
     setSwapStepText('Connecting to Celo Mainnet...');
 
-    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+    const eth = await getConnectedEthereumProvider();
     if (!eth) {
-      setSwapError('Web3 wallet extension (MetaMask/Rabby/Rainbow) not detected in your browser.');
+      setSwapError('Connected Web3 wallet (MetaMask/Rainbow/Coinbase) not detected. Please connect your wallet.');
       setSwapLoading(false);
       return;
     }
@@ -986,28 +1013,34 @@ export default function MoiAppPage() {
     return () => clearInterval(interval);
   }, [hasConnectedOwnerWallet, activeOwnerWallet, fetchAllData]);
 
-  // Handle wallet change event from browser extension
+  // Handle wallet change event from connected wallet provider
   useEffect(() => {
-    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
-    if (eth && eth.on) {
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length > 0 && treasuryData?.userProfile?.walletAddress) {
-          const currentAccount = accounts[0].toLowerCase();
-          const sessionAccount = treasuryData.userProfile.walletAddress.toLowerCase();
-          if (currentAccount !== sessionAccount) {
-            // Active wallet changed - sign out of previous session
-            handleSignOut();
+    let activeEth: any = null;
+    let handleAccountsChanged: any = null;
+
+    getConnectedEthereumProvider().then((eth) => {
+      if (eth && eth.on) {
+        activeEth = eth;
+        handleAccountsChanged = (accounts: string[]) => {
+          if (accounts.length > 0 && treasuryData?.userProfile?.walletAddress) {
+            const currentAccount = accounts[0].toLowerCase();
+            const sessionAccount = treasuryData.userProfile.walletAddress.toLowerCase();
+            if (currentAccount !== sessionAccount) {
+              // Active wallet changed - sign out of previous session
+              handleSignOut();
+            }
           }
-        }
-      };
-      eth.on('accountsChanged', handleAccountsChanged);
-      return () => {
-        if (eth.removeListener) {
-          eth.removeListener('accountsChanged', handleAccountsChanged);
-        }
-      };
-    }
-  }, [treasuryData?.userProfile?.walletAddress]);
+        };
+        eth.on('accountsChanged', handleAccountsChanged);
+      }
+    });
+
+    return () => {
+      if (activeEth && activeEth.removeListener && handleAccountsChanged) {
+        activeEth.removeListener('accountsChanged', handleAccountsChanged);
+      }
+    };
+  }, [treasuryData?.userProfile?.walletAddress, getConnectedEthereumProvider]);
 
   // Dynamic QR Code generation for Receive modal matching connected wallet
   useEffect(() => {
@@ -1090,7 +1123,7 @@ export default function MoiAppPage() {
     setInvoiceSigningError(null);
 
     const connectedWallet = activeOwnerWallet || '';
-    const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+    const eth = await getConnectedEthereumProvider();
     const invNumber = invoiceFormRef.trim() || `INV-2026-${Math.floor(100 + Math.random() * 900)}`;
 
     let creatorSignature = '';
@@ -1535,9 +1568,9 @@ export default function MoiAppPage() {
     setLookupLoading(true);
     setLookupMessage(null);
     try {
-      const eth = (window as any).ethereum;
+      const eth = await getConnectedEthereumProvider();
       if (!eth) {
-        setLookupMessage('A Web3 wallet extension (MetaMask/Rabby/MiniPay) is required to sign the SIWE challenge.');
+        setLookupMessage('A Web3 wallet extension (MetaMask/Rainbow/Coinbase) is required to sign the SIWE challenge.');
         return;
       }
 
@@ -1593,7 +1626,7 @@ export default function MoiAppPage() {
     setAuthWalletError(null);
     setAuthWalletLoading(true);
     try {
-      const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+      const eth = await getConnectedEthereumProvider();
       if (!eth) {
         setAuthWalletError('NO_WALLET_INSTALLED');
         setShowAuthModal(true);
@@ -1703,7 +1736,7 @@ export default function MoiAppPage() {
     }
     setAuthWalletError(null);
 
-    const eth = (window as any).ethereum;
+    const eth = await getConnectedEthereumProvider();
     if (!eth) {
       setAuthWalletError('Web3 wallet extension required to complete cryptographic authentication.');
       return;

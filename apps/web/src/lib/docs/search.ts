@@ -97,3 +97,4 @@ export function searchDocs(query: string, limit = 8): SearchResult[] {
 
   return results.sort((a, b) => b.score - a.score).slice(0, limit);
 }
+

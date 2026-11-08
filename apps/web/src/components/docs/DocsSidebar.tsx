@@ -122,3 +122,4 @@ export function DocsSidebar({ onOpenSearch, onCloseMobile }: DocsSidebarProps) {
     </aside>
   );
 }
+

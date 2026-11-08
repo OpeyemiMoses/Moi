@@ -58,3 +58,4 @@ export function getNextPrevPages(slug: string): {
     next: index < pages.length - 1 ? { title: pages[index + 1].title, slug: pages[index + 1].slug } : null,
   };
 }
+

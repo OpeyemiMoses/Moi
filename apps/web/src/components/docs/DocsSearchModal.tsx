@@ -174,3 +174,4 @@ export function DocsSearchModal({ isOpen, onClose }: DocsSearchModalProps) {
     </div>
   );
 }
+

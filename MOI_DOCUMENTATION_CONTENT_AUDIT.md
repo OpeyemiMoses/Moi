@@ -74,3 +74,4 @@ Tokens verified against `CELO_VERIFIED_ASSETS` in `packages/shared-types/src/ind
 1. No claim is made that domestic bank clearing (e.g. cNGN direct NIP transfer) is operational; it is documented honestly as staged.
 2. No claim of live autonomous background worker mempool broadcast without owner key is made for production users; trades are executed safely through the connected owner wallet on the frontend.
 3. No synthetic or simulated mainnet transaction hashes are documented as live evidence.
+
