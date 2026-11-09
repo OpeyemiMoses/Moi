@@ -30,6 +30,7 @@ import {
   Lock,
   LogOut,
   Mail,
+  Menu,
   PauseCircle,
   Play,
   Plus,
@@ -149,6 +150,20 @@ export default function MoiAppPage() {
   const [viewMode, setViewMode] = useState<'landing' | 'app'>('landing');
   const [activeTab, setActiveTab] = useState<AppTab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isLandingMobileNavOpen, setIsLandingMobileNavOpen] = useState(false);
+
+  // Prevent background scrolling when mobile side nav drawer is open
+  useEffect(() => {
+    if (isMobileNavOpen || isLandingMobileNavOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileNavOpen, isLandingMobileNavOpen]);
 
   // Sign-In & Sign-Up Authentication state
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -2194,21 +2209,125 @@ export default function MoiAppPage() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/docs"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
             >
               <BookOpen className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
               <span>Docs</span>
             </Link>
             <button
               onClick={handleLaunchApp}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#0B0F14]/12 bg-white hover:bg-[#F8FAFC] text-[#0B0F14] transition shadow-xs whitespace-nowrap cursor-pointer shrink-0"
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-[#087F5B] shrink-0" />
               <span>Enter Treasury OS</span>
             </button>
             <MoiWalletButton size="sm" />
+            <button
+              onClick={() => setIsLandingMobileNavOpen(true)}
+              className="sm:hidden p-2 rounded-lg text-[#0B0F14] hover:bg-[#0B0F14]/5 transition cursor-pointer"
+              aria-label="Open mobile navigation menu"
+            >
+              <Menu className="w-5 h-5 text-[#0B0F14]" />
+            </button>
           </div>
         </header>
+
+        {/* MOBILE SLIDE-IN NAV DRAWER FOR LANDING PAGE */}
+        {isLandingMobileNavOpen && (
+          <div className="fixed inset-0 z-50 sm:hidden">
+            <div
+              className="fixed inset-0 bg-[#0B0F14]/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+              onClick={() => setIsLandingMobileNavOpen(false)}
+            />
+            <div className="fixed inset-y-0 right-0 w-72 max-w-[85vw] bg-white text-[#0B0F14] shadow-2xl flex flex-col justify-between p-5 z-50 border-l border-[#0B0F14]/10 animate-in slide-in-from-right duration-200">
+              <div className="space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-[#0B0F14]/8">
+                  <div className="flex items-center gap-2">
+                    <MoiRibbonMark className="w-7 h-6 shrink-0" />
+                    <span className="text-base font-black tracking-tight text-[#0B0F14]">MOI</span>
+                  </div>
+                  <button
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="p-1.5 rounded-lg text-[#0B0F14]/60 hover:text-[#0B0F14] hover:bg-slate-100 transition cursor-pointer"
+                    aria-label="Close navigation menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setIsLandingMobileNavOpen(false);
+                      handleLaunchApp();
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#00E676] hover:bg-[#00c968] text-[#0B0F14] text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Enter Treasury OS</span>
+                  </button>
+
+                  <Link
+                    href="/docs"
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#F8FAFC] hover:bg-slate-100 border border-[#0B0F14]/10 text-[#0B0F14] text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <BookOpen className="w-4 h-4 text-[#087F5B]" />
+                    <span>Documentation</span>
+                  </Link>
+                </div>
+
+                <nav className="space-y-1 pt-2 border-t border-[#0B0F14]/8 text-xs font-semibold text-[#0B0F14]/75">
+                  <a
+                    href="#workflow"
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="block px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#087F5B]"
+                  >
+                    How It Works
+                  </a>
+                  <a
+                    href="#simulator"
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="block px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#087F5B]"
+                  >
+                    Live RFQ Simulator
+                  </a>
+                  <a
+                    href="#pillars"
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="block px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#087F5B]"
+                  >
+                    6 Core Pillars
+                  </a>
+                  <a
+                    href="#corridors"
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="block px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#087F5B]"
+                  >
+                    Corridors & Telemetry
+                  </a>
+                  <a
+                    href="/api/identity/agent.json"
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => setIsLandingMobileNavOpen(false)}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#087F5B]"
+                  >
+                    <span>ERC-8004 Registry</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#0B0F14]/40" />
+                  </a>
+                </nav>
+              </div>
+
+              <div className="pt-4 border-t border-[#0B0F14]/8 flex items-center justify-between">
+                <span className="text-[10px] text-[#0B0F14]/50">Celo Mainnet · 42220</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#B6F7D2]/60 text-[#087F5B] text-[9px] font-bold">
+                  Zero Gas Protocols
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* HERO SECTION */}
         <section className="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-8 pt-4 pb-8 sm:pt-6 sm:pb-10">
@@ -3212,11 +3331,196 @@ export default function MoiAppPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0B0F14] flex flex-col lg:flex-row">
-      {/* COLLAPSIBLE MIDNIGHT SIDEBAR (#0B0F14) */}
+      {/* MOBILE TOP BAR (Sticky header with hamburger button - visible on screens < lg) */}
+      <div className="lg:hidden sticky top-0 z-40 bg-[#0B0F14] text-white px-4 py-3 flex items-center justify-between border-b border-white/10 shadow-md">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(true)}
+            className="p-2 -ml-1.5 rounded-lg text-white hover:bg-white/10 transition cursor-pointer"
+            aria-label="Open side navigation menu"
+          >
+            <Menu className="w-5 h-5 text-[#00E676]" />
+          </button>
+          <button
+            onClick={() => setViewMode('landing')}
+            className="flex items-center gap-2 text-left"
+          >
+            <MoiRibbonMark className="w-7 h-6 shrink-0" />
+            <div className="overflow-hidden">
+              <span className="text-base font-black tracking-tight text-white block leading-none">
+                MOI
+              </span>
+              <span className="text-[9px] text-[#B6F7D2]/80 font-medium">
+                Celo · 42220
+              </span>
+            </div>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <MoiWalletButton size="sm" />
+          <button
+            onClick={() => setActiveTab('profile')}
+            className="w-7 h-7 rounded-full bg-[#00E676] text-[#0B0F14] font-black text-xs flex items-center justify-center shrink-0 cursor-pointer shadow-xs"
+            title="Operator Profile"
+          >
+            {userInitials}
+          </button>
+        </div>
+      </div>
+
+      {/* MOBILE SIDE NAV DRAWER (Slides in from the left when hamburger is tapped) */}
+      {isMobileNavOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-[#0B0F14]/75 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+            onClick={() => setIsMobileNavOpen(false)}
+          />
+
+          {/* Drawer Container */}
+          <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-[#0B0F14] text-white shadow-2xl flex flex-col justify-between p-5 z-50 animate-in slide-in-from-left duration-250 ease-out border-r border-white/10">
+            <div className="space-y-6 overflow-y-auto pr-1">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <button
+                  onClick={() => {
+                    setViewMode('landing');
+                    setIsMobileNavOpen(false);
+                  }}
+                  className="flex items-center gap-2.5 text-left"
+                >
+                  <MoiRibbonMark className="w-8 h-7 shrink-0" />
+                  <div>
+                    <span className="text-lg font-black tracking-tight text-white block leading-none">
+                      MOI
+                    </span>
+                    <span className="text-[10px] text-[#B6F7D2]/75 font-medium">
+                      Celo Mainnet · 42220
+                    </span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setIsMobileNavOpen(false)}
+                  className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                  aria-label="Close navigation menu"
+                >
+                  <X className="w-5 h-5 text-white/80" />
+                </button>
+              </div>
+
+              {/* Navigation Menu Links */}
+              <nav className="space-y-1">
+                {(
+                  [
+                    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                    { id: 'agents', label: 'Agents', icon: Bot },
+                    { id: 'treasury', label: 'Treasury & FX', icon: TrendingUp },
+                    { id: 'invoices', label: 'Invoices & Pay', icon: FileText },
+                    { id: 'buy', label: 'Buy Services', icon: Zap },
+                    { id: 'transactions', label: 'Transactions', icon: Activity },
+                    { id: 'profile', label: 'Operator Profile', icon: User },
+                    { id: 'settings', label: 'Settings', icon: Settings },
+                  ] as const
+                ).map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setIsMobileNavOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                        isActive
+                          ? 'bg-[#087F5B]/40 text-[#00E676] border border-[#00E676]/30 shadow-xs'
+                          : 'text-white/75 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4 h-4 shrink-0 ${
+                          isActive ? 'text-[#00E676]' : 'text-white/60'
+                        }`}
+                      />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+
+                {/* Documentation Centre Link */}
+                <Link
+                  href="/docs"
+                  onClick={() => setIsMobileNavOpen(false)}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-white/75 hover:text-white hover:bg-white/5 transition mt-2 pt-3 border-t border-white/10"
+                >
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="w-4 h-4 text-[#00E676] shrink-0" />
+                    <span>Documentation</span>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-white/40" />
+                </Link>
+              </nav>
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="space-y-3 pt-4 border-t border-white/10">
+              <button
+                onClick={() => {
+                  handleEmergencyPause(!anyMandatePaused);
+                  setIsMobileNavOpen(false);
+                }}
+                className={`w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                  anyMandatePaused
+                    ? 'bg-[#00E676] text-[#0B0F14]'
+                    : 'bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30'
+                }`}
+              >
+                <PauseCircle className="w-4 h-4 shrink-0" />
+                <span>{anyMandatePaused ? 'Resume Mandates' : 'Emergency Pause All'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('profile');
+                  setIsMobileNavOpen(false);
+                }}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs transition cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <div className="w-7 h-7 rounded-full bg-[#00E676] text-[#0B0F14] font-black text-xs flex items-center justify-center shrink-0">
+                    {userInitials}
+                  </div>
+                  <div className="text-left truncate">
+                    <p className="font-bold text-white text-xs truncate">
+                      {profileForm.displayName || 'Treasury Operator'}
+                    </p>
+                    <p className="text-[10px] text-white/50 font-mono-num truncate">
+                      {ownerWalletShort}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                    hasConnectedOwnerWallet
+                      ? 'bg-[#00E676]/20 text-[#00E676]'
+                      : 'bg-amber-400/20 text-amber-300'
+                  }`}
+                >
+                  {hasConnectedOwnerWallet ? 'Connected' : 'Offline'}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DESKTOP COLLAPSIBLE MIDNIGHT SIDEBAR (#0B0F14) - HIDDEN ON MOBILE */}
       <aside
-        className={`w-full ${
-          isSidebarCollapsed ? 'lg:w-20 p-3' : 'lg:w-64 p-4 lg:p-5'
-        } bg-[#0B0F14] text-white flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out`}
+        className={`hidden lg:flex ${
+          isSidebarCollapsed ? 'w-20 p-3' : 'w-64 p-4 lg:p-5'
+        } bg-[#0B0F14] text-white flex-col justify-between shrink-0 transition-all duration-300 ease-in-out sticky top-0 h-screen overflow-y-auto`}
       >
         <div>
           {/* Top Logo & Collapse Toggle: Always clearly visible whether expanded or collapsed */}
@@ -3382,7 +3686,7 @@ export default function MoiAppPage() {
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 sm:p-5 lg:p-10 max-w-6xl w-full mx-auto space-y-6">
+      <main className="flex-1 p-3 sm:p-5 lg:p-10 max-w-6xl w-full mx-auto space-y-5 sm:space-y-6 min-w-0">
         {/* Global Emergency Banner if Paused */}
         {anyMandatePaused && (
           <div className="rounded-2xl bg-red-50 border border-red-200 p-4 flex items-center justify-between">
@@ -3407,8 +3711,8 @@ export default function MoiAppPage() {
           </div>
         )}
 
-        {/* Top App Header Strip with Mode Pill & Clickable Profile Chip */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#0B0F14]/8">
+        {/* Top App Header Strip with Mode Pill & Clickable Profile Chip (Desktop) */}
+        <div className="hidden lg:flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[#0B0F14]/8">
           <div className="flex items-center gap-2 text-xs font-semibold text-[#0B0F14]/60">
             <span className="inline-flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${hasConnectedOwnerWallet ? 'bg-[#00E676] animate-pulse' : 'bg-amber-400'}`} />
